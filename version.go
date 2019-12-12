@@ -1,4 +1,4 @@
-package core
+package errors
 
 // commit contains the current git commit and is set in the build.sh script
 var commit string
