@@ -27,7 +27,7 @@ func New(message string) error {
 	return pkerrors.New(message)
 }
 
-func (e *Error) Error() string {
+func (e Error) Error() string {
 	// implements error interface
 
 	if i := strings.Index(e.Text, "%s"); i > -1 {
