@@ -3,8 +3,6 @@ package errors
 import (
 	"fmt"
 	"strings"
-
-	pkerrors "github.com/pkg/errors"
 )
 
 // Error describes an augmented implementation of Go's error interface
@@ -21,10 +19,11 @@ type Error struct {
 	Value interface{} `json:"value"`
 }
 
-// New returns an error with the supplied message.
+// New returns an error with the supplied code, id, and message.
 // New also records the stack trace at the point it was called.
-func New(message string) error {
-	return pkerrors.New(message)
+func New(code int, id, message string) error {
+	err := Error{Code: code, ID: id, Text: message}
+	return WithStack(&err)
 }
 
 func (e Error) Error() string {
