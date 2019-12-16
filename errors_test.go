@@ -1,6 +1,7 @@
 package errors_test
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -24,9 +25,32 @@ func (suite *ErrorsSuite) SetupSuite() {
 }
 
 func (suite *ErrorsSuite) TestCanCreate() {
-	err := errors.New("this is the error")
+	err := errors.New(32123, "error.test.create", "this is the error")
 	_, ok := err.(error)
 	suite.Require().True(ok, "Object is not an error")
+	var inner *errors.Error
+	suite.Assert().True(errors.As(err, &inner), "err should contain an errors.Error")
+}
+
+func (suite *ErrorsSuite) TestCanTellIsError() {
+	err := errors.NotFoundError.WithWhat("key")
+	suite.Require().NotNil(err, "err should not be nil")
+	suite.Assert().True(errors.Is(err, errors.NotFoundError), "err should be a NotFoundError")
+}
+
+func (suite *ErrorsSuite) TestCanTellContainsAnError() {
+	err := errors.NotFoundError.WithWhat("key")
+	suite.Require().NotNil(err, "err should not be nil")
+	var inner *errors.Error
+	suite.Assert().True(errors.As(err, &inner), "err should contain an errors.Error")
+}
+
+func (suite *ErrorsSuite) TestCanTellDoesNotContainAnError() {
+	err := errors.Errorf("Houston, we have a problem")
+	suite.Require().NotNil(err, "err should not be nil")
+	suite.Assert().False(errors.Is(err, errors.Error{}), "err should not contain an errors.Error")
+	var inner *errors.Error
+	suite.Assert().False(errors.As(err, &inner), "err should not contain an errors.Error")
 }
 
 func (suite *ErrorsSuite) TestSentinels() {
@@ -58,4 +82,64 @@ func (suite *ErrorsSuite) TestSentinels() {
 		ok = errors.As(err, &inner)
 		suite.Assert().True(ok, "Inner Error should be an errors.Error")
 	}
+}
+
+func ExampleError_WithWhat() {
+	err := errors.ArgumentMissingError.WithWhat("key")
+	if err != nil {
+		fmt.Println(err)
+
+		var details *errors.Error
+		if errors.As(err, &details) {
+			fmt.Println(details.ID)
+		}
+	}
+	// Output:
+	// Argument key is missing
+	// error.argument.missing
+}
+
+func ExampleError() {
+	err := errors.New(500, "error.test.custom", "Test Error")
+	if err != nil {
+		fmt.Println(err)
+
+		var details *errors.Error
+		if errors.As(err, &details) {
+			fmt.Println(details.ID)
+		}
+	}
+	// Output:
+	// Test Error
+	// error.test.custom
+}
+
+func ExampleError_WithWhatAndValue() {
+	err := errors.ArgumentInvalidError.WithWhatAndValue("key", "value")
+	if err != nil {
+		fmt.Println(err)
+
+		var details *errors.Error
+		if errors.As(err, &details) {
+			fmt.Println(details.ID)
+		}
+	}
+	// Output:
+	// Argument key is invalid (value: value)
+	// error.argument.invalid
+}
+
+func ExampleError_WithWhatAndValue_array() {
+	err := errors.ArgumentInvalidError.WithWhatAndValue("key", []string{"value1", "value2"})
+	if err != nil {
+		fmt.Println(err)
+
+		var details *errors.Error
+		if errors.As(err, &details) {
+			fmt.Println(details.ID)
+		}
+	}
+	// Output:
+	// Argument key is invalid (value: [value1 value2])
+	// error.argument.invalid
 }

@@ -23,8 +23,7 @@ func (e Error) WithWhatAndValue(what string, value interface{}) error {
 var ArgumentMissingError = Error{0, "error.argument.missing", "Argument %s is missing", "", nil}
 
 // ArgumentInvalidError is used when an argument has an unexpected value
-var ArgumentInvalidError = Error{0, "error.argument.invalid", "Argument %s is invalid (value: %s)", "", nil}
-// should be: %#v
+var ArgumentInvalidError = Error{0, "error.argument.invalid", "Argument %s is invalid (value: %v)", "", nil}
 
 // FoundError is used when something is found but it should not have been
 var FoundError = Error{0, "error.found", "%s %s Found", "", nil}
