@@ -39,15 +39,10 @@ func (e Error) Error() string {
 	return e.Text
 }
 
-func (e *Error) Format(s fmt.State, verb rune) {
-	// implements fmt.Formatter interface
-}
-
-func (e *Error) Unwrap() error {
-	return pkerrors.Cause(e)
-}
-
-func (e *Error) Is(target error) bool {
-	// TODO: I AM HERE
-	return false
+func (e Error) Is(target error) bool {
+	inner, ok := target.(Error)
+	if !ok {
+		return false
+	}
+	return e.ID == inner.ID
 }

@@ -30,23 +30,32 @@ func (suite *ErrorsSuite) TestCanCreate() {
 }
 
 func (suite *ErrorsSuite) TestSentinels() {
-	sentinels := map[string]*errors.Error{
-		"ArgumentInvalidError": &errors.ArgumentInvalidError,
+	sentinels := map[string]errors.Error{
+		"ArgumentInvalidError": errors.ArgumentInvalidError,
 	}
 
 	for name, sentinel := range sentinels {
 		err := sentinel.WithWhatAndValue("test", "value")
+		suite.Assert().Equal("", sentinel.What, "Sentinel's what should not have been changed")
+		suite.Assert().Nil(sentinel.Value, "Sentinel's value should not have been changed")
+
 		_, ok := err.(error)
 		suite.Assert().Truef(ok, "Instance of %s is not an error", name)
+		suite.Assert().Equal("withStack", reflect.ValueOf(err).Elem().Type().Name())
+
+		cause := errors.Cause(err)
+		suite.Require().NotNil(cause, "Error's cause should not be nil")
+		suite.Assert().Equal("Error", reflect.ValueOf(cause).Elem().Type().Name())
+
+		unwrap := errors.Unwrap(err)
+		suite.Require().NotNil(unwrap, "Error's unwrap should not be nil")
+		suite.Assert().Equal("Error", reflect.ValueOf(cause).Elem().Type().Name())
+
+		ok = errors.Is(err, sentinel)
+		suite.Assert().True(ok, "Inner Error should be of the same type as the sentinel")
+
 		var inner errors.Error
-		suite.Assert().True(errors.As(err, &inner), "Inner Error should be an errors.Error")
-
-		value := errors.Unwrap(err)
-		unwrapped, ok := value.(errors.Error)
-		suite.Assert().True(ok, "Unwrapped error should be an errors.Error")
-		if ok {
-			suite.Assert().Equal("test", unwrapped.What)
-		}
-
+		ok = errors.As(err, &inner)
+		suite.Assert().True(ok, "Inner Error should be an errors.Error")
 	}
 }

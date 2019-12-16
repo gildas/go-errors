@@ -5,25 +5,26 @@ import (
 )
 
 // WithWhat creates a new error from a given sentinal telling "What" is wrong
-func (e *Error) WithWhat(what string) error {
-	final := *e
+func (e Error) WithWhat(what string) error {
+	final := e
 	final.What = what
 	return pkerrors.WithStack(&final)
 }
 
 // WithWhatAndValue creates a new error from a given sentinal telling "What" is wrong and the wrong value
-func (e *Error) WithWhatAndValue(what string, value interface{}) error {
-	final := *e
+func (e Error) WithWhatAndValue(what string, value interface{}) error {
+	final := e
 	final.What  = what
 	final.Value = value
-	return pkerrors.WithStack(&final)
+	return WithStack(&final)
 }
 
 // ArgumentMissingError is used when an argument is missing
 var ArgumentMissingError = Error{0, "error.argument.missing", "Argument %s is missing", "", nil}
 
 // ArgumentInvalidError is used when an argument has an unexpected value
-var ArgumentInvalidError = Error{0, "error.argument.invalid", "Argument %s is invalid (value: %#v)", "", nil}
+var ArgumentInvalidError = Error{0, "error.argument.invalid", "Argument %s is invalid (value: %s)", "", nil}
+// should be: %#v
 
 // FoundError is used when something is found but it should not have been
 var FoundError = Error{0, "error.found", "%s %s Found", "", nil}
