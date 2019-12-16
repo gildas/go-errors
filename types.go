@@ -29,14 +29,11 @@ func New(message string) error {
 
 func (e Error) Error() string {
 	// implements error interface
-
-	if i := strings.Index(e.Text, "%s"); i > -1 {
-		if len(e.Text) > i + 2 && strings.Contains(e.Text[i+2:], "%s") { // TODO: detect %v, %d, etc
-			return fmt.Sprintf(e.Text, e.What, e.Value)
-		}
-		return fmt.Sprintf(e.Text, e.What)
-	} 
-	return e.Text
+	switch strings.Count(e.Text, "%") {
+	case 0:  return e.Text
+	case 1:  return fmt.Sprintf(e.Text, e.What)
+	default: return fmt.Sprintf(e.Text, e.What, e.Value)
+	}
 }
 
 func (e Error) Is(target error) bool {
