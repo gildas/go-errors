@@ -54,7 +54,7 @@ func (suite *ErrorsSuite) TestSentinels() {
 		ok = errors.Is(err, sentinel)
 		suite.Assert().True(ok, "Inner Error should be of the same type as the sentinel")
 
-		var inner errors.Error
+		var inner *errors.Error
 		ok = errors.As(err, &inner)
 		suite.Assert().True(ok, "Inner Error should be an errors.Error")
 	}
