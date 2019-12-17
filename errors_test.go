@@ -2,6 +2,7 @@ package errors_test
 
 import (
 	"fmt"
+	"encoding/json"
 	"reflect"
 	"strings"
 	"testing"
@@ -25,11 +26,8 @@ func (suite *ErrorsSuite) SetupSuite() {
 }
 
 func (suite *ErrorsSuite) TestCanCreate() {
-	err := errors.New(32123, "error.test.create", "this is the error")
-	_, ok := err.(error)
-	suite.Require().True(ok, "Object is not an error")
-	var inner *errors.Error
-	suite.Assert().True(errors.As(err, &inner), "err should contain an errors.Error")
+	err := errors.NewSentinel(32123, "error.test.create", "this is the error")
+	suite.Require().NotNil(err, "newly created sentinel cannot be nil")
 }
 
 func (suite *ErrorsSuite) TestCanTellIsError() {
@@ -100,7 +98,8 @@ func ExampleError_WithWhat() {
 }
 
 func ExampleError() {
-	err := errors.New(500, "error.test.custom", "Test Error")
+	sentinel := errors.NewSentinel(500, "error.test.custom", "Test Error")
+	err := sentinel.New()
 	if err != nil {
 		fmt.Println(err)
 
@@ -111,6 +110,22 @@ func ExampleError() {
 	}
 	// Output:
 	// Test Error
+	// error.test.custom
+}
+
+func ExampleError_WithMessage() {
+	sentinel := errors.NewSentinel(500, "error.test.custom", "Test Error")
+	err := sentinel.WithMessage("hmmm... this is bad")
+	if err != nil {
+		fmt.Println(err)
+
+		var details *errors.Error
+		if errors.As(err, &details) {
+			fmt.Println(details.ID)
+		}
+	}
+	// Output:
+	// hmmm... this is bad: Test Error
 	// error.test.custom
 }
 
@@ -142,4 +157,23 @@ func ExampleError_WithWhatAndValue_array() {
 	// Output:
 	// Argument key is invalid (value: [value1 value2])
 	// error.argument.invalid
+}
+
+func ExampleError_Wrap() {
+	var payload struct {Value string `json:"value"`}
+
+	err := json.Unmarshal([]byte(`{"value": 0`), &payload)
+	if err != nil {
+		finalerr := errors.JSONMarshalError.Wrap(err)
+
+		fmt.Println(finalerr)
+
+		var details *errors.Error
+		if errors.As(finalerr, &details) {
+			fmt.Println(details.ID)
+		}
+	}
+	// Output:
+	// JSON Failed to marshal data: Error
+	// error.json.marshal
 }

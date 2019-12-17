@@ -17,17 +17,28 @@ type Error struct {
 	What string `json:"what,omitempty"`
 	// Value contains the value that was wrong for errros that need it, like ArgumentInvalidError
 	Value interface{} `json:"value"`
+	// Cause contains the error that caused this error (to wrap a json error in a JSONMarshalError, for example)
+	Cause error
 }
 
-// New returns an error with the supplied code, id, and message.
+// New creates a new instance of this error
 // New also records the stack trace at the point it was called.
-func New(code int, id, message string) error {
-	err := Error{Code: code, ID: id, Text: message}
-	return WithStack(&err)
+func (e Error) New() error {
+	final := e
+	return WithStack(&final)
 }
 
+// WithMessage annotates a new instance of this error with a new message.
+// If err is nil, WithMessage returns nil.
+// WithMessage also records the stack trace at the point it was called.
+func (e Error) WithMessage(message string) error {
+	final := e
+	return WithMessage(&final, message)
+}
+
+// Error returns the string version of this error
+// implements error interface
 func (e Error) Error() string {
-	// implements error interface
 	switch strings.Count(e.Text, "%") {
 	case 0:  return e.Text
 	case 1:  return fmt.Sprintf(e.Text, e.What)
@@ -35,10 +46,18 @@ func (e Error) Error() string {
 	}
 }
 
+// Is tells if this error matches the target
+// implements errors.Is interface (package "errors")
 func (e Error) Is(target error) bool {
 	inner, ok := target.(Error)
 	if !ok {
 		return false
 	}
 	return e.ID == inner.ID
+}
+
+func (e Error) Wrap(err error) error {
+	final := e
+	e.Cause = err
+	return WithStack(&final)
 }
