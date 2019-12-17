@@ -33,7 +33,8 @@ func (suite *ErrorsSuite) TestCanCreate() {
 func (suite *ErrorsSuite) TestCanTellIsError() {
 	err := errors.NotFoundError.WithWhat("key")
 	suite.Require().NotNil(err, "err should not be nil")
-	suite.Assert().True(errors.Is(err, errors.NotFoundError), "err should be a NotFoundError")
+	suite.Assert().True(errors.Is(err, errors.NotFoundError), "err should match a NotFoundError (pointer)")
+	suite.Assert().True(errors.Is(err, *errors.NotFoundError), "err should match a NotFoundError (object)")
 }
 
 func (suite *ErrorsSuite) TestCanTellContainsAnError() {
@@ -55,33 +56,6 @@ func (suite *ErrorsSuite) TestFailsWithNonErrorTarget() {
 	suite.Assert().False(errors.NotFoundError.Is(errors.New("Hello")), "Error should not be a pkg/errors.fundamental")
 }
 
-func (suite *ErrorsSuite) TestSentinels() {
-	sentinels := map[string]errors.Error{
-		"ArgumentInvalidError": errors.ArgumentInvalidError,
-	}
-
-	for name, sentinel := range sentinels {
-		err := sentinel.WithWhatAndValue("test", "value")
-		suite.Assert().Equal("", sentinel.What, "Sentinel's what should not have been changed")
-		suite.Assert().Nil(sentinel.Value, "Sentinel's value should not have been changed")
-
-		_, ok := err.(error)
-		suite.Assert().Truef(ok, "Instance of %s is not an error", name)
-		suite.Assert().Equal("withStack", reflect.ValueOf(err).Elem().Type().Name())
-
-		unwrap := errors.Unwrap(err)
-		suite.Require().NotNil(unwrap, "Error's unwrap should not be nil")
-		suite.Assert().Equal("Error", reflect.ValueOf(unwrap).Elem().Type().Name())
-
-		ok = errors.Is(err, sentinel)
-		suite.Assert().True(ok, "Inner Error should be of the same type as the sentinel")
-
-		var inner *errors.Error
-		ok = errors.As(err, &inner)
-		suite.Assert().True(ok, "Inner Error should be an errors.Error")
-	}
-}
-
 func (suite *ErrorsSuite) TestWrappers() {
 	var err error
 
@@ -91,17 +65,25 @@ func (suite *ErrorsSuite) TestWrappers() {
 	err = errors.Errorf("Hello World")
 	suite.Assert().NotNil(err)
 
+	err = errors.WithMessage(errors.NotFoundError, "Hello World")
+	suite.Assert().NotNil(err)
+
+	err = errors.WithMessagef(errors.NotFoundError, "Hello World")
+	suite.Assert().NotNil(err)
+
 	err = errors.Wrap(errors.NotFoundError, "Hello World")
 	suite.Assert().NotNil(err)
 
 	err = errors.Wrapf(errors.NotFoundError, "Hello World")
 	suite.Assert().NotNil(err)
 
-	err = errors.WithMessage(errors.NotFoundError, "Hello World")
-	suite.Assert().NotNil(err)
+	unwrapped := errors.Unwrap(err)
+	suite.Assert().NotNil(unwrapped)
 
-	err = errors.WithMessagef(errors.NotFoundError, "Hello World")
-	suite.Assert().NotNil(err)
+	suite.Assert().True(errors.Is(err, errors.NotFoundError), "err should be of the same type as NotFoundError")
+
+	var inner *errors.Error
+	suite.Assert().True(errors.As(err, &inner), "Inner Error should be an errors.Error")
 }
 
 func ExampleError_WithWhat() {
