@@ -56,11 +56,13 @@ func (e Error) Error() string {
 // Is tells if this error matches the target
 // implements errors.Is interface (package "errors")
 func (e Error) Is(target error) bool {
-	inner, ok := target.(Error)
-	if !ok {
-		return false
+	if pactual, ok := target.(*Error); ok {
+		return e.ID == pactual.ID
 	}
-	return e.ID == inner.ID
+	if actual, ok := target.(Error); ok {
+		return e.ID == actual.ID
+	}
+	return false
 }
 
 // Wrap wraps the given error in this Error
