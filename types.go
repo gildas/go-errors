@@ -39,11 +39,18 @@ func (e Error) WithMessage(message string) error {
 // Error returns the string version of this error
 // implements error interface
 func (e Error) Error() string {
+	var sb strings.Builder
+
 	switch strings.Count(e.Text, "%") {
-	case 0:  return e.Text
-	case 1:  return fmt.Sprintf(e.Text, e.What)
-	default: return fmt.Sprintf(e.Text, e.What, e.Value)
+	case 0:  sb.WriteString(e.Text)
+	case 1:  fmt.Fprintf(&sb, e.Text, e.What)
+	default: fmt.Fprintf(&sb, e.Text, e.What, e.Value)
 	}
+	if e.Cause != nil {
+		sb.WriteString(": ")
+		sb.WriteString(e.Cause.Error())
+	}
+	return sb.String()
 }
 
 // Is tells if this error matches the target
@@ -56,8 +63,15 @@ func (e Error) Is(target error) bool {
 	return e.ID == inner.ID
 }
 
+// Wrap wraps the given error in this Error
 func (e Error) Wrap(err error) error {
 	final := e
-	e.Cause = err
+	final.Cause = err
 	return WithStack(&final)
+}
+
+// Unwrap gives the Cause of this Error, if any
+// implements errors.Unwrap interface (package "errors")
+func (e Error) Unwrap() error {
+	return e.Cause
 }
