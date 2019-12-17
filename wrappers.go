@@ -5,6 +5,12 @@ import (
 	pkerrors "github.com/pkg/errors"
 )
 
+// New returns a new error with the supplied message
+// New also records the stack trace at the point it was called.
+func New(message string) error {
+	return pkerrors.New(message)
+}
+
 // Errorf formats according to a format specifier and returns the string
 // as a value that satisfies error.
 // Errorf also records the stack trace at the point it was called.
