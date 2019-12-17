@@ -51,6 +51,10 @@ func (suite *ErrorsSuite) TestCanTellDoesNotContainAnError() {
 	suite.Assert().False(errors.As(err, &inner), "err should not contain an errors.Error")
 }
 
+func (suite *ErrorsSuite) TestFailsWithNonErrorTarget() {
+	suite.Assert().False(errors.NotFoundError.Is(errors.New("Hello")), "Error should not be a pkg/errors.fundamental")
+}
+
 func (suite *ErrorsSuite) TestSentinels() {
 	sentinels := map[string]errors.Error{
 		"ArgumentInvalidError": errors.ArgumentInvalidError,
@@ -65,13 +69,9 @@ func (suite *ErrorsSuite) TestSentinels() {
 		suite.Assert().Truef(ok, "Instance of %s is not an error", name)
 		suite.Assert().Equal("withStack", reflect.ValueOf(err).Elem().Type().Name())
 
-		cause := errors.Cause(err)
-		suite.Require().NotNil(cause, "Error's cause should not be nil")
-		suite.Assert().Equal("Error", reflect.ValueOf(cause).Elem().Type().Name())
-
 		unwrap := errors.Unwrap(err)
 		suite.Require().NotNil(unwrap, "Error's unwrap should not be nil")
-		suite.Assert().Equal("Error", reflect.ValueOf(cause).Elem().Type().Name())
+		suite.Assert().Equal("Error", reflect.ValueOf(unwrap).Elem().Type().Name())
 
 		ok = errors.Is(err, sentinel)
 		suite.Assert().True(ok, "Inner Error should be of the same type as the sentinel")
@@ -80,6 +80,28 @@ func (suite *ErrorsSuite) TestSentinels() {
 		ok = errors.As(err, &inner)
 		suite.Assert().True(ok, "Inner Error should be an errors.Error")
 	}
+}
+
+func (suite *ErrorsSuite) TestWrappers() {
+	var err error
+
+	err = errors.New("Hello World")
+	suite.Assert().NotNil(err)
+
+	err = errors.Errorf("Hello World")
+	suite.Assert().NotNil(err)
+
+	err = errors.Wrap(errors.NotFoundError, "Hello World")
+	suite.Assert().NotNil(err)
+
+	err = errors.Wrapf(errors.NotFoundError, "Hello World")
+	suite.Assert().NotNil(err)
+
+	err = errors.WithMessage(errors.NotFoundError, "Hello World")
+	suite.Assert().NotNil(err)
+
+	err = errors.WithMessagef(errors.NotFoundError, "Hello World")
+	suite.Assert().NotNil(err)
 }
 
 func ExampleError_WithWhat() {
@@ -165,15 +187,20 @@ func ExampleError_Wrap() {
 	err := json.Unmarshal([]byte(`{"value": 0`), &payload)
 	if err != nil {
 		finalerr := errors.JSONMarshalError.Wrap(err)
-
-		fmt.Println(finalerr)
-
 		var details *errors.Error
 		if errors.As(finalerr, &details) {
 			fmt.Println(details.ID)
 		}
+
+		fmt.Println(finalerr)
+
+		cause := details.Unwrap()
+		if cause != nil {
+			fmt.Println(cause)
+		}
 	}
 	// Output:
-	// JSON Failed to marshal data: Error
 	// error.json.marshal
+	// JSON failed to marshal data: unexpected end of JSON input
+	// unexpected end of JSON input
 }
