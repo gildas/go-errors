@@ -50,21 +50,6 @@ func WithMessagef(err error, format string, args ...interface{}) error {
 	return pkerrors.WithMessagef(err, format, args...)
 }
 
-// Cause returns the underlying cause of the error, if possible.
-// An error value has a cause if it implements the following
-// interface:
-//
-//     type causer interface {
-//            Cause() error
-//     }
-//
-// If the error does not implement Cause, the original error will
-// be returned. If the error is nil, nil will be returned without further
-// investigation.
-func Cause(err error) error {
-	return pkerrors.Cause(err)
-}
-
 //***************** goerrors
 
 // Is reports whether any error in err's chain matches target.
