@@ -10,7 +10,7 @@ variables:
   - name:  GOBIN
     value: '$(GOPATH)/bin' # Go binaries path
   - name:  GOROOT
-    value: '/usr/local/go1.11' # Go installation path
+    value: '/usr/local/go1.13' # Go installation path
   - name:  GOPATH
     value: '$(system.defaultWorkingDirectory)/gopath' # Go workspace path
   - name:  modulePath
