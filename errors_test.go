@@ -186,3 +186,24 @@ func ExampleError_Wrap() {
 	// JSON failed to marshal data: unexpected end of JSON input
 	// unexpected end of JSON input
 }
+
+func (suite *ErrorsSuite) TestCanCreateMultiError() {
+	err := &errors.MultiError{}
+	suite.Require().NotNil(err, "err should not be nil")
+	suite.Assert().Nil(err.AsError(), "err should contain nothing")
+	suite.Assert().Equal("", err.Error())
+	err.Append(errors.New("this is an error"))
+	suite.Assert().NotNil(err.AsError(), "err should contain something")
+}
+
+func ExampleMultiError() {
+	err := &errors.MultiError{}
+	err.Append(errors.New("this is the first error"))
+	err.Append(errors.New("this is the second error"))
+	fmt.Println(err)
+	// Output:
+	// 2 Errors:
+	// this is the first error
+	// this is the second error
+
+}
