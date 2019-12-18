@@ -32,6 +32,12 @@ var ArgumentMissingError = NewSentinel(http.StatusBadRequest, "error.argument.mi
 // ArgumentInvalidError is used when an argument has an unexpected value
 var ArgumentInvalidError = NewSentinel(http.StatusBadRequest, "error.argument.invalid", "Argument %s is invalid (value: %v)")
 
+// EnvironmentMissingError is used when an argument is missing
+var EnvironmentMissingError = NewSentinel(http.StatusBadRequest, "error.environment.missing", "Environment variable %s is missing")
+
+// EnvironmentInvalidError is used when an argument has an unexpected value
+var EnvironmentInvalidError = NewSentinel(http.StatusBadRequest, "error.environment.invalid", "Environment variable %s is invalid (value: %v)")
+
 // FoundError is used when something is found but it should not have been
 var FoundError = NewSentinel(http.StatusFound, "error.found", "%s %s Found")
 
