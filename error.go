@@ -77,3 +77,18 @@ func (e Error) Wrap(err error) error {
 func (e Error) Unwrap() error {
 	return e.Cause
 }
+
+// WithWhat creates a new error from a given sentinal telling "What" is wrong
+func (e *Error) WithWhat(what string) error {
+	final := *e
+	final.What = what
+	return WithStack(&final)
+}
+
+// WithWhatAndValue creates a new error from a given sentinal telling "What" is wrong and the wrong value
+func (e *Error) WithWhatAndValue(what string, value interface{}) error {
+	final := *e
+	final.What = what
+	final.Value = value
+	return WithStack(&final)
+}
