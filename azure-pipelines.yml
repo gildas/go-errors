@@ -22,12 +22,21 @@ steps:
     mkdir -p '$(GOPATH)/pkg'
     mkdir -p '$(modulePath)'
     shopt -s extglob
+    shopt -s dotglob
     mv !(gopath) '$(modulePath)'
     echo '##vso[task.prependpath]$(GOBIN)'
     echo '##vso[task.prependpath]$(GOROOT)/bin'
   displayName: 'Set up the Go workspace'
 
-- script: go get -v -t -d ./...
+- script: |
+    go version
+    # Get all packages for testing (-t) and source code (-d)
+    go get -v -t -d ./...
+    go list -m all
+    if [ -f Gopkg.toml ]; then
+        curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+        dep ensure
+    fi
   workingDirectory: '$(modulePath)'
   displayName: 'go get dependencies'
 
