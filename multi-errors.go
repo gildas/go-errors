@@ -38,5 +38,5 @@ func (me *MultiError) AsError() error {
 	if me == nil || len(me.Errors) == 0 {
 		return nil
 	}
-	return me
+	return WithStack(me)
 }
