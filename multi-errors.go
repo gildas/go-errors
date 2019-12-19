@@ -11,8 +11,8 @@ type MultiError struct {
 }
 
 // Error returns the string version of this error
-// implements error interface
 func (me *MultiError) Error() string {
+	// implements error interface
 	if len(me.Errors) == 0 {
 		return ""
 	}
@@ -25,7 +25,7 @@ func (me *MultiError) Error() string {
 }
 
 // Append appends a new error
-//   If the error is nil, nothing is added
+// If the error is nil, nothing is added
 func (me *MultiError) Append(err error) *MultiError {
 	if err != nil {
 		me.Errors = append(me.Errors, err)

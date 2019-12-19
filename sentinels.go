@@ -4,6 +4,7 @@ import "net/http"
 
 // NewSentinel creates a new sentinel
 // a sentinel is an Error that hasn't been decorated with a stack trace
+//
 // Typically, it can be used to create error that can be matched later
 func NewSentinel(code int, id, message string) *Error {
 	return &Error{Code: code, ID: id, Text: message}

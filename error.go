@@ -30,6 +30,7 @@ func (e Error) New() error {
 
 // WithMessage annotates a new instance of this error with a new message.
 // If err is nil, WithMessage returns nil.
+//
 // WithMessage also records the stack trace at the point it was called.
 func (e Error) WithMessage(message string) error {
 	final := e
@@ -37,8 +38,8 @@ func (e Error) WithMessage(message string) error {
 }
 
 // Error returns the string version of this error
-// implements error interface
 func (e Error) Error() string {
+	// implements error interface
 	var sb strings.Builder
 
 	switch strings.Count(e.Text, "%") {
@@ -54,8 +55,8 @@ func (e Error) Error() string {
 }
 
 // Is tells if this error matches the target
-// implements errors.Is interface (package "errors")
 func (e Error) Is(target error) bool {
+	// implements errors.Is interface (package "errors")
 	if pactual, ok := target.(*Error); ok {
 		return e.ID == pactual.ID
 	}
@@ -73,8 +74,8 @@ func (e Error) Wrap(err error) error {
 }
 
 // Unwrap gives the Cause of this Error, if any
-// implements errors.Unwrap interface (package "errors")
 func (e Error) Unwrap() error {
+	// implements errors.Unwrap interface (package "errors")
 	return e.Cause
 }
 
