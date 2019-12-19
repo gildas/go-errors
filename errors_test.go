@@ -192,14 +192,14 @@ func (suite *ErrorsSuite) TestCanCreateMultiError() {
 	suite.Require().NotNil(err, "err should not be nil")
 	suite.Assert().Nil(err.AsError(), "err should contain nothing")
 	suite.Assert().Equal("", err.Error())
-	err.Append(errors.New("this is an error"))
+	_ = err.Append(errors.New("this is an error"))
 	suite.Assert().NotNil(err.AsError(), "err should contain something")
 }
 
 func ExampleMultiError() {
 	err := &errors.MultiError{}
-	err.Append(errors.New("this is the first error"))
-	err.Append(errors.New("this is the second error"))
+	_ = err.Append(errors.New("this is the first error"))
+	_ = err.Append(errors.New("this is the second error"))
 	fmt.Println(err)
 	// Output:
 	// 2 Errors:
