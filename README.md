@@ -52,3 +52,30 @@ func main() {
     }
 }
 ```
+
+To return an HTTP Status as an error, you could do this:  
+```go
+func doit() error {
+    req, err := http.NewRequest(http.MethodGet, "http://www.acme.org")
+    if err != nil {
+        return errors.WithStack(err)
+    }
+    httpclient := http.DefaultClient()
+    res, err := httpclient.Do(req)
+    if err != nil {
+        return errors.WithStack(err)
+    }
+    if res.StatusCode >= 400 {
+        return errors.FromHTTPStatusCode(res.StatusCode)
+    }
+    return nil
+}
+
+func main() {
+    err := doit()
+    if (errors.Is(err, errors.HTTPBadRequest)) {
+        // do something
+    }
+    // do something else
+}
+```

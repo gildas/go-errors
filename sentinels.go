@@ -2,12 +2,64 @@ package errors
 
 import "net/http"
 
+import "fmt"
+
 // NewSentinel creates a new sentinel
 // a sentinel is an Error that hasn't been decorated with a stack trace
 //
 // Typically, it can be used to create error that can be matched later
 func NewSentinel(code int, id, message string) *Error {
 	return &Error{Code: code, ID: id, Text: message}
+}
+
+// FromHTTPStatusCode creates a new error of the sentinel that matches the given HTTP status code
+// it also records the stack trace at the point it was called.
+func FromHTTPStatusCode(code int) error {
+	switch code {
+	case http.StatusBadGateway: return WithStack(HTTPBadGatewayError)
+	case http.StatusBadRequest: return WithStack(HTTPBadRequestError)
+	case http.StatusForbidden: return WithStack(HTTPForbiddenError)
+	case http.StatusInternalServerError: return WithStack(HTTPInternalServerError)
+	case http.StatusMethodNotAllowed: return WithStack(HTTPMethodNotAllowedError)
+	case http.StatusNotFound: return WithStack(HTTPNotFoundError)
+	case http.StatusNotImplemented: return WithStack(HTTPNotImplementedError)
+	case http.StatusServiceUnavailable: return WithStack(HTTPServiceUnavailableError)
+	case http.StatusUnauthorized: return WithStack(HTTPUnauthorizedError)
+	case http.StatusConflict: return WithStack(HTTPStatusConflictError)
+	case http.StatusExpectationFailed: return WithStack(HTTPStatusExpectationFailedError)
+	case http.StatusFailedDependency: return WithStack(HTTPStatusFailedDependencyError)
+	case http.StatusGatewayTimeout: return WithStack(HTTPStatusGatewayTimeoutError)
+	case http.StatusGone: return WithStack(HTTPStatusGoneError)
+	case http.StatusHTTPVersionNotSupported: return WithStack(HTTPStatusHTTPVersionNotSupportedError)
+	case http.StatusInsufficientStorage: return WithStack(HTTPStatusInsufficientStorageError)
+	case http.StatusLengthRequired: return WithStack(HTTPStatusLengthRequiredError)
+	case http.StatusLocked: return WithStack(HTTPStatusLockedError)
+	case http.StatusLoopDetected: return WithStack(HTTPStatusLoopDetectedError)
+	case http.StatusMisdirectedRequest: return WithStack(HTTPStatusMisdirectedRequestError)
+	case http.StatusNetworkAuthenticationRequired: return WithStack(HTTPStatusNetworkAuthenticationRequiredError)
+	case http.StatusNotAcceptable: return WithStack(HTTPStatusNotAcceptableError)
+	case http.StatusNotExtended: return WithStack(HTTPStatusNotExtendedError)
+	case http.StatusPaymentRequired: return WithStack(HTTPStatusPaymentRequiredError)
+	case http.StatusPreconditionFailed: return WithStack(HTTPStatusPreconditionFailedError)
+	case http.StatusPreconditionRequired: return WithStack(HTTPStatusPreconditionRequiredError)
+	case http.StatusProxyAuthRequired: return WithStack(HTTPStatusProxyAuthRequiredError)
+	case http.StatusRequestEntityTooLarge: return WithStack(HTTPStatusRequestEntityTooLargeError)
+	case http.StatusRequestHeaderFieldsTooLarge: return WithStack(HTTPStatusRequestHeaderFieldsTooLargeError)
+	case http.StatusRequestTimeout: return WithStack(HTTPStatusRequestTimeoutError)
+	case http.StatusRequestURITooLong: return WithStack(HTTPStatusRequestURITooLongError)
+	case http.StatusRequestedRangeNotSatisfiable: return WithStack(HTTPStatusRequestedRangeNotSatisfiableError)
+	case http.StatusTeapot: return WithStack(HTTPStatusTeapotError)
+	case http.StatusTooEarly: return WithStack(HTTPStatusTooEarlyError)
+	case http.StatusTooManyRequests: return WithStack(HTTPStatusTooManyRequestsError)
+	case http.StatusUnavailableForLegalReasons: return WithStack(HTTPStatusUnavailableForLegalReasonsError)
+	case http.StatusUnprocessableEntity: return WithStack(HTTPStatusUnprocessableEntityError)
+	case http.StatusUnsupportedMediaType: return WithStack(HTTPStatusUnsupportedMediaTypeError)
+	case http.StatusUpgradeRequired: return WithStack(HTTPStatusUpgradeRequiredError)
+	case http.StatusUseProxy: return WithStack(HTTPStatusUseProxyError)
+	case http.StatusVariantAlsoNegotiates: return WithStack(HTTPStatusVariantAlsoNegotiatesError)
+	default:
+		return WithStack(NewSentinel(code, fmt.Sprintf("error.http.%d", code), fmt.Sprintf("HTTP Status %d", code)))
+	}
 }
 
 /*********** Standard Errors ***********************************************************************************************************/
