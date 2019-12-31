@@ -5,7 +5,7 @@ import (
 	pkerrors "github.com/pkg/errors"
 )
 
-// New returns a new error with the supplied message
+// New returns a new error with the supplied message.
 // New also records the stack trace at the point it was called.
 func New(message string) error {
 	return pkerrors.New(message)
