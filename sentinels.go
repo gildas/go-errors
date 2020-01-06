@@ -16,47 +16,88 @@ func NewSentinel(code int, id, message string) *Error {
 // It also records the stack trace at the point it was called.
 func FromHTTPStatusCode(code int) error {
 	switch code {
-	case http.StatusBadGateway: return WithStack(HTTPBadGatewayError)
-	case http.StatusBadRequest: return WithStack(HTTPBadRequestError)
-	case http.StatusForbidden: return WithStack(HTTPForbiddenError)
-	case http.StatusInternalServerError: return WithStack(HTTPInternalServerError)
-	case http.StatusMethodNotAllowed: return WithStack(HTTPMethodNotAllowedError)
-	case http.StatusNotFound: return WithStack(HTTPNotFoundError)
-	case http.StatusNotImplemented: return WithStack(HTTPNotImplementedError)
-	case http.StatusServiceUnavailable: return WithStack(HTTPServiceUnavailableError)
-	case http.StatusUnauthorized: return WithStack(HTTPUnauthorizedError)
-	case http.StatusConflict: return WithStack(HTTPStatusConflictError)
-	case http.StatusExpectationFailed: return WithStack(HTTPStatusExpectationFailedError)
-	case http.StatusFailedDependency: return WithStack(HTTPStatusFailedDependencyError)
-	case http.StatusGatewayTimeout: return WithStack(HTTPStatusGatewayTimeoutError)
-	case http.StatusGone: return WithStack(HTTPStatusGoneError)
-	case http.StatusHTTPVersionNotSupported: return WithStack(HTTPStatusHTTPVersionNotSupportedError)
-	case http.StatusInsufficientStorage: return WithStack(HTTPStatusInsufficientStorageError)
-	case http.StatusLengthRequired: return WithStack(HTTPStatusLengthRequiredError)
-	case http.StatusLocked: return WithStack(HTTPStatusLockedError)
-	case http.StatusLoopDetected: return WithStack(HTTPStatusLoopDetectedError)
-	case http.StatusMisdirectedRequest: return WithStack(HTTPStatusMisdirectedRequestError)
-	case http.StatusNetworkAuthenticationRequired: return WithStack(HTTPStatusNetworkAuthenticationRequiredError)
-	case http.StatusNotAcceptable: return WithStack(HTTPStatusNotAcceptableError)
-	case http.StatusNotExtended: return WithStack(HTTPStatusNotExtendedError)
-	case http.StatusPaymentRequired: return WithStack(HTTPStatusPaymentRequiredError)
-	case http.StatusPreconditionFailed: return WithStack(HTTPStatusPreconditionFailedError)
-	case http.StatusPreconditionRequired: return WithStack(HTTPStatusPreconditionRequiredError)
-	case http.StatusProxyAuthRequired: return WithStack(HTTPStatusProxyAuthRequiredError)
-	case http.StatusRequestEntityTooLarge: return WithStack(HTTPStatusRequestEntityTooLargeError)
-	case http.StatusRequestHeaderFieldsTooLarge: return WithStack(HTTPStatusRequestHeaderFieldsTooLargeError)
-	case http.StatusRequestTimeout: return WithStack(HTTPStatusRequestTimeoutError)
-	case http.StatusRequestURITooLong: return WithStack(HTTPStatusRequestURITooLongError)
-	case http.StatusRequestedRangeNotSatisfiable: return WithStack(HTTPStatusRequestedRangeNotSatisfiableError)
-	case http.StatusTeapot: return WithStack(HTTPStatusTeapotError)
-	case http.StatusTooEarly: return WithStack(HTTPStatusTooEarlyError)
-	case http.StatusTooManyRequests: return WithStack(HTTPStatusTooManyRequestsError)
-	case http.StatusUnavailableForLegalReasons: return WithStack(HTTPStatusUnavailableForLegalReasonsError)
-	case http.StatusUnprocessableEntity: return WithStack(HTTPStatusUnprocessableEntityError)
-	case http.StatusUnsupportedMediaType: return WithStack(HTTPStatusUnsupportedMediaTypeError)
-	case http.StatusUpgradeRequired: return WithStack(HTTPStatusUpgradeRequiredError)
-	case http.StatusUseProxy: return WithStack(HTTPStatusUseProxyError)
-	case http.StatusVariantAlsoNegotiates: return WithStack(HTTPStatusVariantAlsoNegotiatesError)
+	case http.StatusBadGateway:
+		return WithStack(HTTPBadGatewayError)
+	case http.StatusBadRequest:
+		return WithStack(HTTPBadRequestError)
+	case http.StatusForbidden:
+		return WithStack(HTTPForbiddenError)
+	case http.StatusInternalServerError:
+		return WithStack(HTTPInternalServerError)
+	case http.StatusMethodNotAllowed:
+		return WithStack(HTTPMethodNotAllowedError)
+	case http.StatusNotFound:
+		return WithStack(HTTPNotFoundError)
+	case http.StatusNotImplemented:
+		return WithStack(HTTPNotImplementedError)
+	case http.StatusServiceUnavailable:
+		return WithStack(HTTPServiceUnavailableError)
+	case http.StatusUnauthorized:
+		return WithStack(HTTPUnauthorizedError)
+	case http.StatusConflict:
+		return WithStack(HTTPStatusConflictError)
+	case http.StatusExpectationFailed:
+		return WithStack(HTTPStatusExpectationFailedError)
+	case http.StatusFailedDependency:
+		return WithStack(HTTPStatusFailedDependencyError)
+	case http.StatusGatewayTimeout:
+		return WithStack(HTTPStatusGatewayTimeoutError)
+	case http.StatusGone:
+		return WithStack(HTTPStatusGoneError)
+	case http.StatusHTTPVersionNotSupported:
+		return WithStack(HTTPStatusHTTPVersionNotSupportedError)
+	case http.StatusInsufficientStorage:
+		return WithStack(HTTPStatusInsufficientStorageError)
+	case http.StatusLengthRequired:
+		return WithStack(HTTPStatusLengthRequiredError)
+	case http.StatusLocked:
+		return WithStack(HTTPStatusLockedError)
+	case http.StatusLoopDetected:
+		return WithStack(HTTPStatusLoopDetectedError)
+	case http.StatusMisdirectedRequest:
+		return WithStack(HTTPStatusMisdirectedRequestError)
+	case http.StatusNetworkAuthenticationRequired:
+		return WithStack(HTTPStatusNetworkAuthenticationRequiredError)
+	case http.StatusNotAcceptable:
+		return WithStack(HTTPStatusNotAcceptableError)
+	case http.StatusNotExtended:
+		return WithStack(HTTPStatusNotExtendedError)
+	case http.StatusPaymentRequired:
+		return WithStack(HTTPStatusPaymentRequiredError)
+	case http.StatusPreconditionFailed:
+		return WithStack(HTTPStatusPreconditionFailedError)
+	case http.StatusPreconditionRequired:
+		return WithStack(HTTPStatusPreconditionRequiredError)
+	case http.StatusProxyAuthRequired:
+		return WithStack(HTTPStatusProxyAuthRequiredError)
+	case http.StatusRequestEntityTooLarge:
+		return WithStack(HTTPStatusRequestEntityTooLargeError)
+	case http.StatusRequestHeaderFieldsTooLarge:
+		return WithStack(HTTPStatusRequestHeaderFieldsTooLargeError)
+	case http.StatusRequestTimeout:
+		return WithStack(HTTPStatusRequestTimeoutError)
+	case http.StatusRequestURITooLong:
+		return WithStack(HTTPStatusRequestURITooLongError)
+	case http.StatusRequestedRangeNotSatisfiable:
+		return WithStack(HTTPStatusRequestedRangeNotSatisfiableError)
+	case http.StatusTeapot:
+		return WithStack(HTTPStatusTeapotError)
+	case http.StatusTooEarly:
+		return WithStack(HTTPStatusTooEarlyError)
+	case http.StatusTooManyRequests:
+		return WithStack(HTTPStatusTooManyRequestsError)
+	case http.StatusUnavailableForLegalReasons:
+		return WithStack(HTTPStatusUnavailableForLegalReasonsError)
+	case http.StatusUnprocessableEntity:
+		return WithStack(HTTPStatusUnprocessableEntityError)
+	case http.StatusUnsupportedMediaType:
+		return WithStack(HTTPStatusUnsupportedMediaTypeError)
+	case http.StatusUpgradeRequired:
+		return WithStack(HTTPStatusUpgradeRequiredError)
+	case http.StatusUseProxy:
+		return WithStack(HTTPStatusUseProxyError)
+	case http.StatusVariantAlsoNegotiates:
+		return WithStack(HTTPStatusVariantAlsoNegotiatesError)
 	default:
 		return WithStack(NewSentinel(code, fmt.Sprintf("error.http.%d", code), fmt.Sprintf("HTTP Status %d", code)))
 	}
@@ -105,124 +146,124 @@ var UnknownError = NewSentinel(http.StatusInternalServerError, "error.unknown", 
 
 /*********** HTTP Errors ***************************************************************************************************************/
 // HTTPBadGatewayError is used when an http.Client request fails.
-var HTTPBadGatewayError = NewSentinel(http.StatusBadGateway, http.StatusText(http.StatusBadGateway), "error.http.gateway")
+var HTTPBadGatewayError = NewSentinel(http.StatusBadGateway, "error.http.gateway", http.StatusText(http.StatusBadGateway))
 
 // HTTPBadRequestError is used when an http.Client request fails.
-var HTTPBadRequestError = NewSentinel(http.StatusBadRequest, http.StatusText(http.StatusBadRequest)+". %s", "error.http.request")
+var HTTPBadRequestError = NewSentinel(http.StatusBadRequest, "error.http.request", http.StatusText(http.StatusBadRequest)+". %s")
 
 // HTTPForbiddenError is used when an http.Client request fails.
-var HTTPForbiddenError = NewSentinel(http.StatusForbidden, http.StatusText(http.StatusForbidden), "error.http.forbidden")
+var HTTPForbiddenError = NewSentinel(http.StatusForbidden, "error.http.forbidden", http.StatusText(http.StatusForbidden))
 
 // HTTPInternalServerError is used when an http.Client request fails.
-var HTTPInternalServerError = NewSentinel(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), "error.http.server")
+var HTTPInternalServerError = NewSentinel(http.StatusInternalServerError, "error.http.server", http.StatusText(http.StatusInternalServerError))
 
 // HTTPMethodNotAllowedError is used when an http.Client request fails.
-var HTTPMethodNotAllowedError = NewSentinel(http.StatusMethodNotAllowed, http.StatusText(http.StatusMethodNotAllowed), "error.http.notallowed")
+var HTTPMethodNotAllowedError = NewSentinel(http.StatusMethodNotAllowed, "error.http.notallowed", http.StatusText(http.StatusMethodNotAllowed))
 
 // HTTPNotFoundError is used when an http.Client request fails.
-var HTTPNotFoundError = NewSentinel(http.StatusNotFound, http.StatusText(http.StatusNotFound), "error.http.notfound")
+var HTTPNotFoundError = NewSentinel(http.StatusNotFound, "error.http.notfound", http.StatusText(http.StatusNotFound))
 
 // HTTPNotImplementedError is used when an http.Client request fails.
-var HTTPNotImplementedError = NewSentinel(http.StatusNotImplemented, http.StatusText(http.StatusNotImplemented), "error.http.notimplemented")
+var HTTPNotImplementedError = NewSentinel(http.StatusNotImplemented, "error.http.notimplemented", http.StatusText(http.StatusNotImplemented))
 
 // HTTPServiceUnavailableError is used when an http.Client request fails.
-var HTTPServiceUnavailableError = NewSentinel(http.StatusServiceUnavailable, http.StatusText(http.StatusServiceUnavailable), "error.http.unavailable")
+var HTTPServiceUnavailableError = NewSentinel(http.StatusServiceUnavailable, "error.http.unavailable", http.StatusText(http.StatusServiceUnavailable))
 
 // HTTPUnauthorizedError is used when an http.Client request fails.
-var HTTPUnauthorizedError = NewSentinel(http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized), "error.http.unauthorized")
+var HTTPUnauthorizedError = NewSentinel(http.StatusUnauthorized, "error.http.unauthorized", http.StatusText(http.StatusUnauthorized))
 
 // HTTPStatusConflictError reports HTTP Error StatusConflict.
-var HTTPStatusConflictError = NewSentinel(http.StatusConflict, http.StatusText(http.StatusConflict), "error.http.conflict")
+var HTTPStatusConflictError = NewSentinel(http.StatusConflict, "error.http.conflict", http.StatusText(http.StatusConflict))
 
 // HTTPStatusExpectationFailedError reports HTTP Error StatusExpectationFailed.
-var HTTPStatusExpectationFailedError = NewSentinel(http.StatusExpectationFailed, http.StatusText(http.StatusExpectationFailed), "error.http.expectation.failed")
+var HTTPStatusExpectationFailedError = NewSentinel(http.StatusExpectationFailed, "error.http.expectation.failed", http.StatusText(http.StatusExpectationFailed))
 
 // HTTPStatusFailedDependencyError reports HTTP Error StatusFailedDependency.
-var HTTPStatusFailedDependencyError = NewSentinel(http.StatusFailedDependency, http.StatusText(http.StatusFailedDependency), "error.http.failed.dependency")
+var HTTPStatusFailedDependencyError = NewSentinel(http.StatusFailedDependency, "error.http.failed.dependency", http.StatusText(http.StatusFailedDependency))
 
 // HTTPStatusGatewayTimeoutError reports HTTP Error StatusGatewayTimeout.
-var HTTPStatusGatewayTimeoutError = NewSentinel(http.StatusGatewayTimeout, http.StatusText(http.StatusGatewayTimeout), "error.http.gateway.timeout")
+var HTTPStatusGatewayTimeoutError = NewSentinel(http.StatusGatewayTimeout, "error.http.gateway.timeout", http.StatusText(http.StatusGatewayTimeout))
 
 // HTTPStatusGoneError reports HTTP Error StatusGone.
-var HTTPStatusGoneError = NewSentinel(http.StatusGone, http.StatusText(http.StatusGone), "error.http.gone")
+var HTTPStatusGoneError = NewSentinel(http.StatusGone, "error.http.gone", http.StatusText(http.StatusGone))
 
 // HTTPStatusHTTPVersionNotSupportedError reports HTTP Error StatusHTTPVersionNotSupported.
-var HTTPStatusHTTPVersionNotSupportedError = NewSentinel(http.StatusHTTPVersionNotSupported, http.StatusText(http.StatusHTTPVersionNotSupported), "error.http.unsupported.version")
+var HTTPStatusHTTPVersionNotSupportedError = NewSentinel(http.StatusHTTPVersionNotSupported, "error.http.unsupported.version", http.StatusText(http.StatusHTTPVersionNotSupported))
 
 // HTTPStatusInsufficientStorageError reports HTTP Error StatusInsufficientStorage.
-var HTTPStatusInsufficientStorageError = NewSentinel(http.StatusInsufficientStorage, http.StatusText(http.StatusInsufficientStorage), "error.http.storage.insufficient")
+var HTTPStatusInsufficientStorageError = NewSentinel(http.StatusInsufficientStorage, "error.http.storage.insufficient", http.StatusText(http.StatusInsufficientStorage))
 
 // HTTPStatusLengthRequiredError reports HTTP Error StatusLengthRequired.
-var HTTPStatusLengthRequiredError = NewSentinel(http.StatusLengthRequired, http.StatusText(http.StatusLengthRequired), "error.http.length.required")
+var HTTPStatusLengthRequiredError = NewSentinel(http.StatusLengthRequired, "error.http.length.required", http.StatusText(http.StatusLengthRequired))
 
 // HTTPStatusLockedError reports HTTP Error StatusLocked.
-var HTTPStatusLockedError = NewSentinel(http.StatusLocked, http.StatusText(http.StatusLocked), "error.http.locked")
+var HTTPStatusLockedError = NewSentinel(http.StatusLocked, "error.http.locked", http.StatusText(http.StatusLocked))
 
 // HTTPStatusLoopDetectedError reports HTTP Error StatusLoopDetected.
-var HTTPStatusLoopDetectedError = NewSentinel(http.StatusLoopDetected, http.StatusText(http.StatusLoopDetected), "error.http.loop.detected")
+var HTTPStatusLoopDetectedError = NewSentinel(http.StatusLoopDetected, "error.http.loop.detected", http.StatusText(http.StatusLoopDetected))
 
 // HTTPStatusMisdirectedRequestError reports HTTP Error StatusMisdirectedRequest.
-var HTTPStatusMisdirectedRequestError = NewSentinel(http.StatusMisdirectedRequest, http.StatusText(http.StatusMisdirectedRequest), "error.http.misdirect.request")
+var HTTPStatusMisdirectedRequestError = NewSentinel(http.StatusMisdirectedRequest, "error.http.misdirect.request", http.StatusText(http.StatusMisdirectedRequest))
 
 // HTTPStatusNetworkAuthenticationRequiredError reports HTTP Error StatusNetworkAuthenticationRequired.
-var HTTPStatusNetworkAuthenticationRequiredError = NewSentinel(http.StatusNetworkAuthenticationRequired, http.StatusText(http.StatusNetworkAuthenticationRequired), "error.http.network.authentication.required")
+var HTTPStatusNetworkAuthenticationRequiredError = NewSentinel(http.StatusNetworkAuthenticationRequired, "error.http.network.authentication.required", http.StatusText(http.StatusNetworkAuthenticationRequired))
 
 // HTTPStatusNotAcceptableError reports HTTP Error StatusNotAcceptable.
-var HTTPStatusNotAcceptableError = NewSentinel(http.StatusNotAcceptable, http.StatusText(http.StatusNotAcceptable), "error.http.notacceptable")
+var HTTPStatusNotAcceptableError = NewSentinel(http.StatusNotAcceptable, "error.http.notacceptable", http.StatusText(http.StatusNotAcceptable))
 
 // HTTPStatusNotExtendedError reports HTTP Error StatusNotExtended.
-var HTTPStatusNotExtendedError = NewSentinel(http.StatusNotExtended, http.StatusText(http.StatusNotExtended), "error.http.notextended")
+var HTTPStatusNotExtendedError = NewSentinel(http.StatusNotExtended, "error.http.notextended", http.StatusText(http.StatusNotExtended))
 
 // HTTPStatusPaymentRequiredError reports HTTP Error StatusPaymentRequired.
-var HTTPStatusPaymentRequiredError = NewSentinel(http.StatusPaymentRequired, http.StatusText(http.StatusPaymentRequired), "error.http.payment.required")
+var HTTPStatusPaymentRequiredError = NewSentinel(http.StatusPaymentRequired, "error.http.payment.required", http.StatusText(http.StatusPaymentRequired))
 
 // HTTPStatusPreconditionFailedError reports HTTP Error StatusPreconditionFailed.
-var HTTPStatusPreconditionFailedError = NewSentinel(http.StatusPreconditionFailed, http.StatusText(http.StatusPreconditionFailed), "error.http.precondition.failed")
+var HTTPStatusPreconditionFailedError = NewSentinel(http.StatusPreconditionFailed, "error.http.precondition.failed", http.StatusText(http.StatusPreconditionFailed))
 
 // HTTPStatusPreconditionRequiredError reports HTTP Error StatusPreconditionRequired.
-var HTTPStatusPreconditionRequiredError = NewSentinel(http.StatusPreconditionRequired, http.StatusText(http.StatusPreconditionRequired), "error.precondition.required")
+var HTTPStatusPreconditionRequiredError = NewSentinel(http.StatusPreconditionRequired, "error.precondition.required", http.StatusText(http.StatusPreconditionRequired))
 
 // HTTPStatusProxyAuthRequiredError reports HTTP Error StatusProxyAuthRequired.
-var HTTPStatusProxyAuthRequiredError = NewSentinel(http.StatusProxyAuthRequired, http.StatusText(http.StatusProxyAuthRequired), "error.http.proxy.authentication.required")
+var HTTPStatusProxyAuthRequiredError = NewSentinel(http.StatusProxyAuthRequired, "error.http.proxy.authentication.required", http.StatusText(http.StatusProxyAuthRequired))
 
 // HTTPStatusRequestEntityTooLargeError reports HTTP Error StatusRequestEntityTooLarge.
-var HTTPStatusRequestEntityTooLargeError = NewSentinel(http.StatusRequestEntityTooLarge, http.StatusText(http.StatusRequestEntityTooLarge), "error.http.request.entity.toolarge")
+var HTTPStatusRequestEntityTooLargeError = NewSentinel(http.StatusRequestEntityTooLarge, "error.http.request.entity.toolarge", http.StatusText(http.StatusRequestEntityTooLarge))
 
 // HTTPStatusRequestHeaderFieldsTooLargeError reports HTTP Error StatusRequestHeaderFieldsTooLarge.
-var HTTPStatusRequestHeaderFieldsTooLargeError = NewSentinel(http.StatusRequestHeaderFieldsTooLarge, http.StatusText(http.StatusRequestHeaderFieldsTooLarge), "error.http.request.fields.toolarge")
+var HTTPStatusRequestHeaderFieldsTooLargeError = NewSentinel(http.StatusRequestHeaderFieldsTooLarge, "error.http.request.fields.toolarge", http.StatusText(http.StatusRequestHeaderFieldsTooLarge))
 
 // HTTPStatusRequestTimeoutError reports HTTP Error StatusRequestTimeout.
-var HTTPStatusRequestTimeoutError = NewSentinel(http.StatusRequestTimeout, http.StatusText(http.StatusRequestTimeout), "error.http.request.timeout")
+var HTTPStatusRequestTimeoutError = NewSentinel(http.StatusRequestTimeout, "error.http.request.timeout", http.StatusText(http.StatusRequestTimeout))
 
 // HTTPStatusRequestURITooLongError reports HTTP Error StatusRequestURITooLong.
-var HTTPStatusRequestURITooLongError = NewSentinel(http.StatusRequestURITooLong, http.StatusText(http.StatusRequestURITooLong), "error.http.request.uri.toolong")
+var HTTPStatusRequestURITooLongError = NewSentinel(http.StatusRequestURITooLong, "error.http.request.uri.toolong", http.StatusText(http.StatusRequestURITooLong))
 
 // HTTPStatusRequestedRangeNotSatisfiableError reports HTTP Error StatusRequestedRangeNotSatisfiable.
-var HTTPStatusRequestedRangeNotSatisfiableError = NewSentinel(http.StatusRequestedRangeNotSatisfiable, http.StatusText(http.StatusRequestedRangeNotSatisfiable), "error.http.request.range.notstatisfiable")
+var HTTPStatusRequestedRangeNotSatisfiableError = NewSentinel(http.StatusRequestedRangeNotSatisfiable, "error.http.request.range.notstatisfiable", http.StatusText(http.StatusRequestedRangeNotSatisfiable))
 
 // HTTPStatusTeapotError reports HTTP Error StatusTeapot.
-var HTTPStatusTeapotError = NewSentinel(http.StatusTeapot, http.StatusText(http.StatusTeapot), "error.http.teapot")
+var HTTPStatusTeapotError = NewSentinel(http.StatusTeapot, "error.http.teapot", http.StatusText(http.StatusTeapot))
 
 // HTTPStatusTooEarlyError reports HTTP Error StatusTooEarly.
-var HTTPStatusTooEarlyError = NewSentinel(http.StatusTooEarly, http.StatusText(http.StatusTooEarly), "error.http.tooearly")
+var HTTPStatusTooEarlyError = NewSentinel(http.StatusTooEarly, "error.http.tooearly", http.StatusText(http.StatusTooEarly))
 
 // HTTPStatusTooManyRequestsError reports HTTP Error StatusTooManyRequests.
-var HTTPStatusTooManyRequestsError = NewSentinel(http.StatusTooManyRequests, http.StatusText(http.StatusTooManyRequests), "error.http.request.toomany")
+var HTTPStatusTooManyRequestsError = NewSentinel(http.StatusTooManyRequests, "error.http.request.toomany", http.StatusText(http.StatusTooManyRequests))
 
 // HTTPStatusUnavailableForLegalReasonsError reports HTTP Error StatusUnavailableForLegalReasons.
-var HTTPStatusUnavailableForLegalReasonsError = NewSentinel(http.StatusUnavailableForLegalReasons, http.StatusText(http.StatusUnavailableForLegalReasons), "error.http.unavailable")
+var HTTPStatusUnavailableForLegalReasonsError = NewSentinel(http.StatusUnavailableForLegalReasons, "error.http.unavailable", http.StatusText(http.StatusUnavailableForLegalReasons))
 
 // HTTPStatusUnprocessableEntityError reports HTTP Error StatusUnprocessableEntity.
-var HTTPStatusUnprocessableEntityError = NewSentinel(http.StatusUnprocessableEntity, http.StatusText(http.StatusUnprocessableEntity), "error.http.entity.unprocessable")
+var HTTPStatusUnprocessableEntityError = NewSentinel(http.StatusUnprocessableEntity, "error.http.entity.unprocessable", http.StatusText(http.StatusUnprocessableEntity))
 
 // HTTPStatusUnsupportedMediaTypeError reports HTTP Error StatusUnsupportedMediaType.
-var HTTPStatusUnsupportedMediaTypeError = NewSentinel(http.StatusUnsupportedMediaType, http.StatusText(http.StatusUnsupportedMediaType), "error.http.mediatype.unsupported")
+var HTTPStatusUnsupportedMediaTypeError = NewSentinel(http.StatusUnsupportedMediaType, "error.http.mediatype.unsupported", http.StatusText(http.StatusUnsupportedMediaType))
 
 // HTTPStatusUpgradeRequiredError reports HTTP Error StatusUpgradeRequired.
-var HTTPStatusUpgradeRequiredError = NewSentinel(http.StatusUpgradeRequired, http.StatusText(http.StatusUpgradeRequired), "error.http.upgrade.required")
+var HTTPStatusUpgradeRequiredError = NewSentinel(http.StatusUpgradeRequired, "error.http.upgrade.required", http.StatusText(http.StatusUpgradeRequired))
 
 // HTTPStatusUseProxyError reports HTTP Error StatusUseProxy.
-var HTTPStatusUseProxyError = NewSentinel(http.StatusUseProxy, http.StatusText(http.StatusUseProxy), "error.http.proxy.required")
+var HTTPStatusUseProxyError = NewSentinel(http.StatusUseProxy, "error.http.proxy.required", http.StatusText(http.StatusUseProxy))
 
 // HTTPStatusVariantAlsoNegotiatesError reports HTTP Error StatusVariantAlsoNegotiates.
-var HTTPStatusVariantAlsoNegotiatesError = NewSentinel(http.StatusVariantAlsoNegotiates, http.StatusText(http.StatusVariantAlsoNegotiates), "error.http.variant.alsonegotiate")
+var HTTPStatusVariantAlsoNegotiatesError = NewSentinel(http.StatusVariantAlsoNegotiates, "error.http.variant.alsonegotiate", http.StatusText(http.StatusVariantAlsoNegotiates))
