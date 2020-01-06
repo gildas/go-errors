@@ -129,6 +129,9 @@ var JSONUnmarshalError = NewSentinel(http.StatusBadRequest, "error.json.unmarsha
 // JSONPropertyMissingError is used when JSON data is missing a property.
 var JSONPropertyMissingError = NewSentinel(http.StatusBadRequest, "error.json.property.missing", "JSON data is missing property %s")
 
+// NotConnectedError is used when some socket, client is not connected to its server.
+var NotConnectedError = NewSentinel(http.StatusGone, "error.client.not_connected", "%s Not Connected")
+
 // NotFoundError is used when something is not found.
 var NotFoundError = NewSentinel(http.StatusNotFound, "error.notfound", "%s %s Not Found")
 
