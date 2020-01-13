@@ -24,7 +24,7 @@ func findme(stuff map[string]string, key string) (string, error) {
     if value, found := stuff[key]; found {
         return value, nil
     }
-    return "", errors.NotFoundError.WithWhat(key)
+    return "", errors.NotFoundError.With(key).WithStack()
 }
 
 func main() {

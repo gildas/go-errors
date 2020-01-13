@@ -13,7 +13,7 @@ Here is how to use the errors:
 	    if value, found := stuff[key]; found {
 	        return value, nil
 	    }
-	    return "", errors.NotFoundError.WithWhat(key)
+	    return "", errors.NotFoundError.With(key).WithStack()
 	}
 
 	func main() {
@@ -41,7 +41,7 @@ If you plan to do something with the content of the error, you would try that:
 	    }
 	}
 
-To return an HTTP Status as an error, you could do this:  
+To return an HTTP Status as an error, you could do this:
 
 	func doit() error {
 		req, err := http.NewRequest(http.MethodGet, "http://www.acme.org")
