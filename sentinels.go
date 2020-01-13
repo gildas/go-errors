@@ -138,6 +138,9 @@ var NotFoundError = NewSentinel(http.StatusNotFound, "error.notfound", "%s %s No
 // NotImplementedError is used when some code/method/func is not written yet.
 var NotImplementedError = NewSentinel(http.StatusNotImplemented, "error.notimplemented", "Not Implemented")
 
+// RuntimeError is used when the code failed executing something.
+var RuntimeError = NewSentinel(http.StatusInternalServerError, "error.runtime", "Runtime Error")
+
 // TooManyError is used when something is found too many times.
 var TooManyError = NewSentinel(http.StatusInternalServerError, "error.toomany", "Too Many")
 
