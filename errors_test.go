@@ -32,14 +32,14 @@ func (suite *ErrorsSuite) TestCanCreate() {
 }
 
 func (suite *ErrorsSuite) TestCanTellIsError() {
-	err := errors.NotFoundError.WithWhat("key")
+	err := errors.NotFoundError.With("key").WithStack()
 	suite.Require().NotNil(err, "err should not be nil")
 	suite.Assert().True(errors.Is(err, errors.NotFoundError), "err should match a NotFoundError (pointer)")
 	suite.Assert().True(errors.Is(err, *errors.NotFoundError), "err should match a NotFoundError (object)")
 }
 
 func (suite *ErrorsSuite) TestCanTellContainsAnError() {
-	err := errors.NotFoundError.WithWhat("key")
+	err := errors.NotFoundError.With("key").WithStack()
 	suite.Require().NotNil(err, "err should not be nil")
 	var inner *errors.Error
 	suite.Assert().True(errors.As(err, &inner), "err should contain an errors.Error")
@@ -51,6 +51,15 @@ func (suite *ErrorsSuite) TestCanTellDoesNotContainAnError() {
 	suite.Assert().False(errors.Is(err, errors.Error{}), "err should not contain an errors.Error")
 	var inner *errors.Error
 	suite.Assert().False(errors.As(err, &inner), "err should not contain an errors.Error")
+}
+
+func (suite *ErrorsSuite) TestCanWrap() {
+	err := errors.Errorf("Houston, we have a problem")
+	wrapped := errors.NotImplementedError.Wrap(err)
+	suite.Require().NotNil(wrapped)
+	suite.Assert().True(errors.Is(wrapped, errors.NotImplementedError), "wrapped err should be a Not Implemented Error")
+	wrapped = errors.NotImplementedError.Wrap(nil)
+	suite.Require().Nil(wrapped, "Wrapped error of nil should be nil")
 }
 
 func (suite *ErrorsSuite) TestFailsWithNonErrorTarget() {
@@ -87,21 +96,6 @@ func (suite *ErrorsSuite) TestWrappers() {
 	suite.Assert().True(errors.As(err, &inner), "Inner Error should be an errors.Error")
 }
 
-func ExampleError_WithWhat() {
-	err := errors.ArgumentMissingError.WithWhat("key")
-	if err != nil {
-		fmt.Println(err)
-
-		var details *errors.Error
-		if errors.As(err, &details) {
-			fmt.Println(details.ID)
-		}
-	}
-	// Output:
-	// Argument key is missing
-	// error.argument.missing
-}
-
 func ExampleError() {
 	sentinel := errors.NewSentinel(500, "error.test.custom", "Test Error")
 	err := sentinel.New()
@@ -134,8 +128,54 @@ func ExampleError_WithMessage() {
 	// error.test.custom
 }
 
-func ExampleError_WithWhatAndValue() {
-	err := errors.ArgumentInvalidError.WithWhatAndValue("key", "value")
+func ExampleError_WithMessagef() {
+	sentinel := errors.NewSentinel(500, "error.test.custom", "Test Error")
+	err := sentinel.WithMessagef("hmmm... this is bad %s", "stuff")
+	if err != nil {
+		fmt.Println(err)
+
+		var details *errors.Error
+		if errors.As(err, &details) {
+			fmt.Println(details.ID)
+		}
+	}
+	// Output:
+	// hmmm... this is bad stuff: Test Error
+	// error.test.custom
+}
+
+func ExampleError_WithStack() {
+	err := errors.NotImplementedError.WithStack()
+	if err != nil {
+		fmt.Println(err)
+
+		var details *errors.Error
+		if errors.As(err, &details) {
+			fmt.Println(details.ID)
+		}
+	}
+	// Output:
+	// Not Implemented
+	// error.notimplemented
+}
+
+func ExampleError_With() {
+	err := errors.ArgumentMissingError.With("key").WithStack()
+	if err != nil {
+		fmt.Println(err)
+
+		var details *errors.Error
+		if errors.As(err, &details) {
+			fmt.Println(details.ID)
+		}
+	}
+	// Output:
+	// Argument key is missing
+	// error.argument.missing
+}
+
+func ExampleError_With_value() {
+	err := errors.ArgumentInvalidError.With("key", "value").WithStack()
 	if err != nil {
 		fmt.Println(err)
 
@@ -149,8 +189,8 @@ func ExampleError_WithWhatAndValue() {
 	// error.argument.invalid
 }
 
-func ExampleError_WithWhatAndValue_array() {
-	err := errors.ArgumentInvalidError.WithWhatAndValue("key", []string{"value1", "value2"})
+func ExampleError_With_array() {
+	err := errors.ArgumentInvalidError.With("key", []string{"value1", "value2"}).WithStack()
 	if err != nil {
 		fmt.Println(err)
 

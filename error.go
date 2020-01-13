@@ -21,7 +21,7 @@ type Error struct {
 	Cause error
 }
 
-// New creates a new instance of this error
+// New creates a new instance of this error.
 // New also records the stack trace at the point it was called.
 func (e Error) New() error {
 	final := e
@@ -37,7 +37,17 @@ func (e Error) WithMessage(message string) error {
 	return WithMessage(&final, message)
 }
 
-// Error returns the string version of this error
+// WithMessagef annotates a new instance of this error with a new message.
+// The message is a format with eventually some arguments
+// If err is nil, WithMessage returns nil.
+//
+// WithMessage also records the stack trace at the point it was called.
+func (e Error) WithMessagef(format string, args ...interface{}) error {
+	final := e
+	return WithMessagef(&final, format, args...)
+}
+
+// Error returns the string version of this error.
 func (e Error) Error() string {
 	// implements error interface
 	var sb strings.Builder
@@ -54,7 +64,7 @@ func (e Error) Error() string {
 	return sb.String()
 }
 
-// Is tells if this error matches the target
+// Is tells if this error matches the target.
 func (e Error) Is(target error) bool {
 	// implements errors.Is interface (package "errors")
 	if pactual, ok := target.(*Error); ok {
@@ -66,30 +76,34 @@ func (e Error) Is(target error) bool {
 	return false
 }
 
-// Wrap wraps the given error in this Error
+// Wrap wraps the given error in this Error.
+// If err is nil, Wrap returns nil.
 func (e Error) Wrap(err error) error {
+	if err == nil {
+		return nil
+	}
 	final := e
 	final.Cause = err
 	return WithStack(&final)
 }
 
-// Unwrap gives the Cause of this Error, if any
+// Unwrap gives the Cause of this Error, if any.
 func (e Error) Unwrap() error {
 	// implements errors.Unwrap interface (package "errors")
 	return e.Cause
 }
 
-// WithWhat creates a new error from a given sentinal telling "What" is wrong
-func (e *Error) WithWhat(what string) error {
+// With creates a new Error from a given sentinel telling "what" is wrong and eventually their value.
+func (e *Error) With(what string, values ...interface{}) Error {
 	final := *e
 	final.What = what
-	return WithStack(&final)
+	if len(values) > 0 {
+		final.Value = values[0]
+	}
+	return final
 }
 
-// WithWhatAndValue creates a new error from a given sentinal telling "What" is wrong and the wrong value
-func (e *Error) WithWhatAndValue(what string, value interface{}) error {
-	final := *e
-	final.What = what
-	final.Value = value
-	return WithStack(&final)
+// WithStack creates a new error from a given Error and records its stack.
+func (e Error) WithStack() error {
+	return WithStack(&e)
 }
