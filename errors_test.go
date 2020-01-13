@@ -53,6 +53,15 @@ func (suite *ErrorsSuite) TestCanTellDoesNotContainAnError() {
 	suite.Assert().False(errors.As(err, &inner), "err should not contain an errors.Error")
 }
 
+func (suite *ErrorsSuite) TestCanWrap() {
+	err := errors.Errorf("Houston, we have a problem")
+	wrapped := errors.NotImplementedError.Wrap(err)
+	suite.Require().NotNil(wrapped)
+	suite.Assert().True(errors.Is(wrapped, errors.NotImplementedError), "wrapped err should be a Not Implemented Error")
+	wrapped = errors.NotImplementedError.Wrap(nil)
+	suite.Require().Nil(wrapped, "Wrapped error of nil should be nil")
+}
+
 func (suite *ErrorsSuite) TestFailsWithNonErrorTarget() {
 	suite.Assert().False(errors.NotFoundError.Is(errors.New("Hello")), "Error should not be a pkg/errors.fundamental")
 }

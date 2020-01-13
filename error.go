@@ -77,7 +77,11 @@ func (e Error) Is(target error) bool {
 }
 
 // Wrap wraps the given error in this Error.
+// If err is nil, Wrap returns nil.
 func (e Error) Wrap(err error) error {
+	if err == nil {
+		return nil
+	}
 	final := e
 	final.Cause = err
 	return WithStack(&final)
