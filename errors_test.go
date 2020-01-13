@@ -134,6 +134,22 @@ func ExampleError_WithMessage() {
 	// error.test.custom
 }
 
+func ExampleError_WithMessagef() {
+	sentinel := errors.NewSentinel(500, "error.test.custom", "Test Error")
+	err := sentinel.WithMessagef("hmmm... this is bad %s", "stuff")
+	if err != nil {
+		fmt.Println(err)
+
+		var details *errors.Error
+		if errors.As(err, &details) {
+			fmt.Println(details.ID)
+		}
+	}
+	// Output:
+	// hmmm... this is bad stuff: Test Error
+	// error.test.custom
+}
+
 func ExampleError_WithWhatAndValue() {
 	err := errors.ArgumentInvalidError.WithWhatAndValue("key", "value")
 	if err != nil {

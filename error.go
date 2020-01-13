@@ -37,6 +37,16 @@ func (e Error) WithMessage(message string) error {
 	return WithMessage(&final, message)
 }
 
+// WithMessagef annotates a new instance of this error with a new message.
+// The message is a format with eventually some arguments
+// If err is nil, WithMessage returns nil.
+//
+// WithMessage also records the stack trace at the point it was called.
+func (e Error) WithMessagef(format string, args ...interface{}) error {
+	final := e
+	return WithMessagef(&final, format, args...)
+}
+
 // Error returns the string version of this error.
 func (e Error) Error() string {
 	// implements error interface
