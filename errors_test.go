@@ -159,6 +159,51 @@ func ExampleError_WithMessagef() {
 	// error.test.custom
 }
 
+func ExampleError_WithStack() {
+	err := errors.NotImplementedError.WithStack()
+	if err != nil {
+		fmt.Println(err)
+
+		var details *errors.Error
+		if errors.As(err, &details) {
+			fmt.Println(details.ID)
+		}
+	}
+	// Output:
+	// Not Implemented
+	// error.notimplemented
+}
+
+func ExampleError_With() {
+	err := errors.ArgumentMissingError.With("key").WithStack()
+	if err != nil {
+		fmt.Println(err)
+
+		var details *errors.Error
+		if errors.As(err, &details) {
+			fmt.Println(details.ID)
+		}
+	}
+	// Output:
+	// Argument key is missing
+	// error.argument.missing
+}
+
+func ExampleError_With_value() {
+	err := errors.ArgumentInvalidError.With("key", "value").WithStack()
+	if err != nil {
+		fmt.Println(err)
+
+		var details *errors.Error
+		if errors.As(err, &details) {
+			fmt.Println(details.ID)
+		}
+	}
+	// Output:
+	// Argument key is invalid (value: value)
+	// error.argument.invalid
+}
+
 func ExampleError_WithWhatAndValue() {
 	err := errors.ArgumentInvalidError.WithWhatAndValue("key", "value")
 	if err != nil {

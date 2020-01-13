@@ -93,17 +93,32 @@ func (e Error) Unwrap() error {
 	return e.Cause
 }
 
-// WithWhat creates a new error from a given sentinal telling "What" is wrong.
+// WithWhat creates a new error from a given sentinel telling "What" is wrong.
 func (e *Error) WithWhat(what string) error {
 	final := *e
 	final.What = what
 	return WithStack(&final)
 }
 
-// WithWhatAndValue creates a new error from a given sentinal telling "What" is wrong and the wrong value.
+// WithWhatAndValue creates a new error from a given sentinel telling "What" is wrong and the wrong value.
 func (e *Error) WithWhatAndValue(what string, value interface{}) error {
 	final := *e
 	final.What = what
 	final.Value = value
 	return WithStack(&final)
+}
+
+// With creates a new Error from a given sentinel telling "what" is wrong and eventually their value.
+func (e *Error) With(what string, values ...interface{}) Error {
+	final := *e
+	final.What = what
+	if len(values) > 0 {
+		final.Value = values[0]
+	}
+	return final
+}
+
+// WithStack creates a new error from a given Error and records its stack.
+func (e Error) WithStack() error {
+	return WithStack(&e)
 }
