@@ -36,6 +36,16 @@ func (suite *ErrorsSuite) TestCanTellIsError() {
 	suite.Require().NotNil(err, "err should not be nil")
 	suite.Assert().True(errors.Is(err, errors.NotFoundError), "err should match a NotFoundError (pointer)")
 	suite.Assert().True(errors.Is(err, *errors.NotFoundError), "err should match a NotFoundError (object)")
+	var details *errors.Error
+	suite.Require().True(errors.As(err, &details), "err should contain an errors.Error")
+	suite.Assert().Equal("key", details.What)
+
+	err = errors.ArgumentMissingError.With("key").WithStack()
+	suite.Require().NotNil(err, "err should not be nil")
+	suite.Assert().True(errors.Is(err, errors.ArgumentMissingError), "err should match a ArgumentMissingError (pointer)")
+	suite.Assert().True(errors.Is(err, *errors.ArgumentMissingError), "err should match a ArgumentMissingError (object)")
+	suite.Require().True(errors.As(err, &details), "err should contain an errors.Error")
+	suite.Assert().Equal("key", details.What)
 }
 
 func (suite *ErrorsSuite) TestCanTellContainsAnError() {
