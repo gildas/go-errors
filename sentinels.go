@@ -111,6 +111,9 @@ var ArgumentMissingError = NewSentinel(http.StatusBadRequest, "error.argument.mi
 // ArgumentInvalidError is used when an argument has an unexpected value.
 var ArgumentInvalidError = NewSentinel(http.StatusBadRequest, "error.argument.invalid", "Argument %s is invalid (value: %v)")
 
+// CreationFailedError is used when something was not created properly.
+var CreationFailedError = NewSentinel(http.StatusInternalServerError, "error.creation.failed", "Failed Creating %s")
+
 // EnvironmentMissingError is used when an argument is missing.
 var EnvironmentMissingError = NewSentinel(http.StatusBadRequest, "error.environment.missing", "Environment variable %s is missing")
 
@@ -119,6 +122,9 @@ var EnvironmentInvalidError = NewSentinel(http.StatusBadRequest, "error.environm
 
 // FoundError is used when something is found but it should not have been.
 var FoundError = NewSentinel(http.StatusFound, "error.found", "%s %s Found")
+
+// InvalidURLError is used when a URL is not valid.
+var InvalidURLError = NewSentinel(http.StatusBadRequest, "error.url.invalid", "Invalid URL %s")
 
 // JSONMarshalError is used when data failed to be marshaled into JSON.
 var JSONMarshalError = NewSentinel(http.StatusBadRequest, "error.json.marshal", "JSON failed to marshal data")
@@ -143,6 +149,9 @@ var RuntimeError = NewSentinel(http.StatusInternalServerError, "error.runtime", 
 
 // TooManyError is used when something is found too many times.
 var TooManyError = NewSentinel(http.StatusInternalServerError, "error.toomany", "Too Many")
+
+// UnauthorizedError is used when some credentials failed some authentication process.
+var UnauthorizedError = NewSentinel(http.StatusUnauthorized, "error.unauthorized", "Invalid Credentials")
 
 // UnsupportedError is used when something is unsupported by the code.
 var UnsupportedError = NewSentinel(http.StatusMethodNotAllowed, "error.unsupported", "Unsupported %s: %s")
