@@ -13,14 +13,14 @@ Here is how to use the errors:
 	    if value, found := stuff[key]; found {
 	        return value, nil
 	    }
-	    return "", errors.NotFoundError.With(key).WithStack()
+	    return "", errors.NotFound.With(key).WithStack()
 	}
 
 	func main() {
 	    var allstuff[string]string
 	    //...
 	    value, err := findme("key1")
-	    if errors.Is(err, errors.NotFoundError) {
+	    if errors.Is(err, errors.NotFound) {
 	        fmt.Fprintf(os.Stderr, "Error: %+v", err)
 	        // This should print the error its wrapped content and a StackTrace.
 	    }
@@ -33,7 +33,7 @@ If you plan to do something with the content of the error, you would try that:
 	    var allstuff[string]string
 	    //...
 	    value, err := findme("key1")
-	    if errors.Is(err, errors.NotFoundError) {
+	    if errors.Is(err, errors.NotFound) {
 	        var details *errors.Error
 	        if errors.As(err, &details) {
 	            fmt.Fprintf(os.Stderr, "Could not find %s", details.What)

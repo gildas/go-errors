@@ -32,24 +32,24 @@ func (suite *ErrorsSuite) TestCanCreate() {
 }
 
 func (suite *ErrorsSuite) TestCanTellIsError() {
-	err := errors.NotFoundError.With("key").WithStack()
+	err := errors.NotFound.With("key").WithStack()
 	suite.Require().NotNil(err, "err should not be nil")
-	suite.Assert().True(errors.Is(err, errors.NotFoundError), "err should match a NotFoundError (pointer)")
-	suite.Assert().True(errors.Is(err, *errors.NotFoundError), "err should match a NotFoundError (object)")
+	suite.Assert().True(errors.Is(err, errors.NotFound), "err should match a NotFoundError (pointer)")
+	suite.Assert().True(errors.Is(err, *errors.NotFound), "err should match a NotFoundError (object)")
 	var details *errors.Error
 	suite.Require().True(errors.As(err, &details), "err should contain an errors.Error")
 	suite.Assert().Equal("key", details.What)
 
-	err = errors.ArgumentMissingError.With("key").WithStack()
+	err = errors.ArgumentMissing.With("key").WithStack()
 	suite.Require().NotNil(err, "err should not be nil")
-	suite.Assert().True(errors.Is(err, errors.ArgumentMissingError), "err should match a ArgumentMissingError (pointer)")
-	suite.Assert().True(errors.Is(err, *errors.ArgumentMissingError), "err should match a ArgumentMissingError (object)")
+	suite.Assert().True(errors.Is(err, errors.ArgumentMissing), "err should match a ArgumentMissingError (pointer)")
+	suite.Assert().True(errors.Is(err, *errors.ArgumentMissing), "err should match a ArgumentMissingError (object)")
 	suite.Require().True(errors.As(err, &details), "err should contain an errors.Error")
 	suite.Assert().Equal("key", details.What)
 }
 
 func (suite *ErrorsSuite) TestCanTellContainsAnError() {
-	err := errors.NotFoundError.With("key").WithStack()
+	err := errors.NotFound.With("key").WithStack()
 	suite.Require().NotNil(err, "err should not be nil")
 	var inner *errors.Error
 	suite.Assert().True(errors.As(err, &inner), "err should contain an errors.Error")
@@ -65,15 +65,15 @@ func (suite *ErrorsSuite) TestCanTellDoesNotContainAnError() {
 
 func (suite *ErrorsSuite) TestCanWrap() {
 	err := errors.Errorf("Houston, we have a problem")
-	wrapped := errors.NotImplementedError.Wrap(err)
+	wrapped := errors.NotImplemented.Wrap(err)
 	suite.Require().NotNil(wrapped)
-	suite.Assert().True(errors.Is(wrapped, errors.NotImplementedError), "wrapped err should be a Not Implemented Error")
-	wrapped = errors.NotImplementedError.Wrap(nil)
+	suite.Assert().True(errors.Is(wrapped, errors.NotImplemented), "wrapped err should be a Not Implemented Error")
+	wrapped = errors.NotImplemented.Wrap(nil)
 	suite.Require().Nil(wrapped, "Wrapped error of nil should be nil")
 }
 
 func (suite *ErrorsSuite) TestFailsWithNonErrorTarget() {
-	suite.Assert().False(errors.NotFoundError.Is(errors.New("Hello")), "Error should not be a pkg/errors.fundamental")
+	suite.Assert().False(errors.NotFound.Is(errors.New("Hello")), "Error should not be a pkg/errors.fundamental")
 }
 
 func (suite *ErrorsSuite) TestWrappers() {
@@ -85,22 +85,22 @@ func (suite *ErrorsSuite) TestWrappers() {
 	err = errors.Errorf("Hello World")
 	suite.Assert().NotNil(err)
 
-	err = errors.WithMessage(errors.NotFoundError, "Hello World")
+	err = errors.WithMessage(errors.NotFound, "Hello World")
 	suite.Assert().NotNil(err)
 
-	err = errors.WithMessagef(errors.NotFoundError, "Hello World")
+	err = errors.WithMessagef(errors.NotFound, "Hello World")
 	suite.Assert().NotNil(err)
 
-	err = errors.Wrap(errors.NotFoundError, "Hello World")
+	err = errors.Wrap(errors.NotFound, "Hello World")
 	suite.Assert().NotNil(err)
 
-	err = errors.Wrapf(errors.NotFoundError, "Hello World")
+	err = errors.Wrapf(errors.NotFound, "Hello World")
 	suite.Assert().NotNil(err)
 
 	unwrapped := errors.Unwrap(err)
 	suite.Assert().NotNil(unwrapped)
 
-	suite.Assert().True(errors.Is(err, errors.NotFoundError), "err should be of the same type as NotFoundError")
+	suite.Assert().True(errors.Is(err, errors.NotFound), "err should be of the same type as NotFoundError")
 
 	var inner *errors.Error
 	suite.Assert().True(errors.As(err, &inner), "Inner Error should be an errors.Error")
@@ -155,7 +155,7 @@ func ExampleError_WithMessagef() {
 }
 
 func ExampleError_WithStack() {
-	err := errors.NotImplementedError.WithStack()
+	err := errors.NotImplemented.WithStack()
 	if err != nil {
 		fmt.Println(err)
 
@@ -170,7 +170,7 @@ func ExampleError_WithStack() {
 }
 
 func ExampleError_With() {
-	err := errors.ArgumentMissingError.With("key").WithStack()
+	err := errors.ArgumentMissing.With("key").WithStack()
 	if err != nil {
 		fmt.Println(err)
 
@@ -185,7 +185,7 @@ func ExampleError_With() {
 }
 
 func ExampleError_With_value() {
-	err := errors.ArgumentInvalidError.With("key", "value").WithStack()
+	err := errors.ArgumentInvalid.With("key", "value").WithStack()
 	if err != nil {
 		fmt.Println(err)
 
@@ -200,7 +200,7 @@ func ExampleError_With_value() {
 }
 
 func ExampleError_With_array() {
-	err := errors.ArgumentInvalidError.With("key", []string{"value1", "value2"}).WithStack()
+	err := errors.ArgumentInvalid.With("key", []string{"value1", "value2"}).WithStack()
 	if err != nil {
 		fmt.Println(err)
 
@@ -265,127 +265,127 @@ func (suite *ErrorsSuite) TestCanCreateFromHTTPStatus() {
 	var details *errors.Error
 
 	err = errors.FromHTTPStatusCode(http.StatusBadGateway)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPBadGatewayError), "err should match a %s", errors.HTTPBadGatewayError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPBadGateway), "err should match a %s", errors.HTTPBadGateway.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusBadRequest)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPBadRequestError), "err should match a %s", errors.HTTPBadRequestError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPBadRequest), "err should match a %s", errors.HTTPBadRequest.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusForbidden)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPForbiddenError), "err should match a %s", errors.HTTPForbiddenError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPForbidden), "err should match a %s", errors.HTTPForbidden.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusInternalServerError)
 	suite.Assert().Truef(errors.Is(err, errors.HTTPInternalServerError), "err should match a %s", errors.HTTPInternalServerError.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusMethodNotAllowed)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPMethodNotAllowedError), "err should match a %s", errors.HTTPMethodNotAllowedError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPMethodNotAllowed), "err should match a %s", errors.HTTPMethodNotAllowed.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusNotFound)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPNotFoundError), "err should match a %s", errors.HTTPNotFoundError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPNotFound), "err should match a %s", errors.HTTPNotFound.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusNotImplemented)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPNotImplementedError), "err should match a %s", errors.HTTPNotImplementedError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPNotImplemented), "err should match a %s", errors.HTTPNotImplemented.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusServiceUnavailable)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPServiceUnavailableError), "err should match a %s", errors.HTTPServiceUnavailableError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPServiceUnavailable), "err should match a %s", errors.HTTPServiceUnavailable.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusUnauthorized)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPUnauthorizedError), "err should match a %s", errors.HTTPUnauthorizedError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPUnauthorized), "err should match a %s", errors.HTTPUnauthorized.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusConflict)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusConflictError), "err should match a %s", errors.HTTPStatusConflictError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusConflict), "err should match a %s", errors.HTTPStatusConflict.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusExpectationFailed)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusExpectationFailedError), "err should match a %s", errors.HTTPStatusExpectationFailedError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusExpectationFailed), "err should match a %s", errors.HTTPStatusExpectationFailed.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusFailedDependency)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusFailedDependencyError), "err should match a %s", errors.HTTPStatusFailedDependencyError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusFailedDependency), "err should match a %s", errors.HTTPStatusFailedDependency.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusGatewayTimeout)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusGatewayTimeoutError), "err should match a %s", errors.HTTPStatusGatewayTimeoutError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusGatewayTimeout), "err should match a %s", errors.HTTPStatusGatewayTimeout.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusGone)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusGoneError), "err should match a %s", errors.HTTPStatusGoneError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusGone), "err should match a %s", errors.HTTPStatusGone.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusHTTPVersionNotSupported)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusHTTPVersionNotSupportedError), "err should match a %s", errors.HTTPStatusHTTPVersionNotSupportedError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusHTTPVersionNotSupported), "err should match a %s", errors.HTTPStatusHTTPVersionNotSupported.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusInsufficientStorage)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusInsufficientStorageError), "err should match a %s", errors.HTTPStatusInsufficientStorageError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusInsufficientStorage), "err should match a %s", errors.HTTPStatusInsufficientStorage.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusLengthRequired)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusLengthRequiredError), "err should match a %s", errors.HTTPStatusLengthRequiredError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusLengthRequired), "err should match a %s", errors.HTTPStatusLengthRequired.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusLocked)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusLockedError), "err should match a %s", errors.HTTPStatusLockedError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusLocked), "err should match a %s", errors.HTTPStatusLocked.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusLoopDetected)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusLoopDetectedError), "err should match a %s", errors.HTTPStatusLoopDetectedError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusLoopDetected), "err should match a %s", errors.HTTPStatusLoopDetected.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusMisdirectedRequest)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusMisdirectedRequestError), "err should match a %s", errors.HTTPStatusMisdirectedRequestError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusMisdirectedRequest), "err should match a %s", errors.HTTPStatusMisdirectedRequest.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusNetworkAuthenticationRequired)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusNetworkAuthenticationRequiredError), "err should match a %s", errors.HTTPStatusNetworkAuthenticationRequiredError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusNetworkAuthenticationRequired), "err should match a %s", errors.HTTPStatusNetworkAuthenticationRequired.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusNotAcceptable)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusNotAcceptableError), "err should match a %s", errors.HTTPStatusNotAcceptableError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusNotAcceptable), "err should match a %s", errors.HTTPStatusNotAcceptable.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusNotExtended)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusNotExtendedError), "err should match a %s", errors.HTTPStatusNotExtendedError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusNotExtended), "err should match a %s", errors.HTTPStatusNotExtended.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusPaymentRequired)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusPaymentRequiredError), "err should match a %s", errors.HTTPStatusPaymentRequiredError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusPaymentRequired), "err should match a %s", errors.HTTPStatusPaymentRequired.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusPreconditionFailed)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusPreconditionFailedError), "err should match a %s", errors.HTTPStatusPreconditionFailedError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusPreconditionFailed), "err should match a %s", errors.HTTPStatusPreconditionFailed.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusPreconditionRequired)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusPreconditionRequiredError), "err should match a %s", errors.HTTPStatusPreconditionRequiredError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusPreconditionRequired), "err should match a %s", errors.HTTPStatusPreconditionRequired.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusProxyAuthRequired)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusProxyAuthRequiredError), "err should match a %s", errors.HTTPStatusProxyAuthRequiredError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusProxyAuthRequired), "err should match a %s", errors.HTTPStatusProxyAuthRequired.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusRequestEntityTooLarge)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusRequestEntityTooLargeError), "err should match a %s", errors.HTTPStatusRequestEntityTooLargeError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusRequestEntityTooLarge), "err should match a %s", errors.HTTPStatusRequestEntityTooLarge.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusRequestHeaderFieldsTooLarge)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusRequestHeaderFieldsTooLargeError), "err should match a %s", errors.HTTPStatusRequestHeaderFieldsTooLargeError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusRequestHeaderFieldsTooLarge), "err should match a %s", errors.HTTPStatusRequestHeaderFieldsTooLarge.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusRequestTimeout)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusRequestTimeoutError), "err should match a %s", errors.HTTPStatusRequestTimeoutError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusRequestTimeout), "err should match a %s", errors.HTTPStatusRequestTimeout.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusRequestURITooLong)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusRequestURITooLongError), "err should match a %s", errors.HTTPStatusRequestURITooLongError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusRequestURITooLong), "err should match a %s", errors.HTTPStatusRequestURITooLong.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusRequestedRangeNotSatisfiable)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusRequestedRangeNotSatisfiableError), "err should match a %s", errors.HTTPStatusRequestedRangeNotSatisfiableError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusRequestedRangeNotSatisfiable), "err should match a %s", errors.HTTPStatusRequestedRangeNotSatisfiable.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusTeapot)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusTeapotError), "err should match a %s", errors.HTTPStatusTeapotError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusTeapot), "err should match a %s", errors.HTTPStatusTeapot.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusTooEarly)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusTooEarlyError), "err should match a %s", errors.HTTPStatusTooEarlyError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusTooEarly), "err should match a %s", errors.HTTPStatusTooEarly.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusTooManyRequests)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusTooManyRequestsError), "err should match a %s", errors.HTTPStatusTooManyRequestsError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusTooManyRequests), "err should match a %s", errors.HTTPStatusTooManyRequests.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusUnavailableForLegalReasons)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusUnavailableForLegalReasonsError), "err should match a %s", errors.HTTPStatusUnavailableForLegalReasonsError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusUnavailableForLegalReasons), "err should match a %s", errors.HTTPStatusUnavailableForLegalReasons.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusUnprocessableEntity)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusUnprocessableEntityError), "err should match a %s", errors.HTTPStatusUnprocessableEntityError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusUnprocessableEntity), "err should match a %s", errors.HTTPStatusUnprocessableEntity.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusUnsupportedMediaType)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusUnsupportedMediaTypeError), "err should match a %s", errors.HTTPStatusUnsupportedMediaTypeError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusUnsupportedMediaType), "err should match a %s", errors.HTTPStatusUnsupportedMediaType.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusUpgradeRequired)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusUpgradeRequiredError), "err should match a %s", errors.HTTPStatusUpgradeRequiredError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusUpgradeRequired), "err should match a %s", errors.HTTPStatusUpgradeRequired.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusUseProxy)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusUseProxyError), "err should match a %s", errors.HTTPStatusUseProxyError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusUseProxy), "err should match a %s", errors.HTTPStatusUseProxy.ID)
 
 	err = errors.FromHTTPStatusCode(http.StatusVariantAlsoNegotiates)
-	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusVariantAlsoNegotiatesError), "err should match a %s", errors.HTTPStatusVariantAlsoNegotiatesError.ID)
+	suite.Assert().Truef(errors.Is(err, errors.HTTPStatusVariantAlsoNegotiates), "err should match a %s", errors.HTTPStatusVariantAlsoNegotiates.ID)
 
 	err = errors.FromHTTPStatusCode(1234)
 	suite.Assert().True(errors.Is(err, errors.Error{ID: "error.http.1234"}), "err should match a error.http.1234")

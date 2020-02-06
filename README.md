@@ -24,14 +24,14 @@ func findme(stuff map[string]string, key string) (string, error) {
     if value, found := stuff[key]; found {
         return value, nil
     }
-    return "", errors.NotFoundError.With(key).WithStack()
+    return "", errors.NotFound.With(key).WithStack()
 }
 
 func main() {
     var allstuff[string]string
     //...
     value, err := findme("key1")
-    if errors.Is(err, errors.NotFoundError) {
+    if errors.Is(err, errors.NotFound) {
         fmt.Fprintf(os.Stderr, "Error: %+v", err)
         // This should print the error its wrapped content and a StackTrace.
     }
@@ -44,7 +44,7 @@ func main() {
     var allstuff[string]string
     //...
     value, err := findme("key1")
-    if errors.Is(err, errors.NotFoundError) {
+    if errors.Is(err, errors.NotFound) {
         var details *errors.Error
         if errors.As(err, &details) {
             fmt.Fprintf(os.Stderr, "Could not find %s", details.What)
