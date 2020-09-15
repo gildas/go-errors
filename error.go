@@ -38,7 +38,9 @@ func (e Error) WithMessage(message string) error {
 }
 
 // WithMessagef annotates a new instance of this error with a new message.
+//
 // The message is a format with eventually some arguments
+//
 // If err is nil, WithMessage returns nil.
 //
 // WithMessage also records the stack trace at the point it was called.
@@ -53,9 +55,12 @@ func (e Error) Error() string {
 	var sb strings.Builder
 
 	switch strings.Count(e.Text, "%") {
-	case 0:  sb.WriteString(e.Text)
-	case 1:  fmt.Fprintf(&sb, e.Text, e.What)
-	default: fmt.Fprintf(&sb, e.Text, e.What, e.Value)
+	case 0:
+		sb.WriteString(e.Text)
+	case 1:
+		fmt.Fprintf(&sb, e.Text, e.What)
+	default:
+		fmt.Fprintf(&sb, e.Text, e.What, e.Value)
 	}
 	if e.Cause != nil {
 		sb.WriteString(": ")
@@ -77,6 +82,7 @@ func (e Error) Is(target error) bool {
 }
 
 // Wrap wraps the given error in this Error.
+//
 // If err is nil, Wrap returns nil.
 func (e Error) Wrap(err error) error {
 	if err == nil {

@@ -1,10 +1,12 @@
 package errors
 
-import "net/http"
-
-import "fmt"
+import (
+	"fmt"
+	"net/http"
+)
 
 // NewSentinel creates a new sentinel.
+//
 // A sentinel is an Error that hasn't been decorated with a stack trace
 //
 // Typically, it can be used to create error that can be matched later
@@ -13,6 +15,7 @@ func NewSentinel(code int, id, message string) *Error {
 }
 
 // FromHTTPStatusCode creates a new error of the sentinel that matches the given HTTP status code.
+//
 // It also records the stack trace at the point it was called.
 func FromHTTPStatusCode(code int) error {
 	switch code {
