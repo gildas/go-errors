@@ -1,6 +1,7 @@
 package errors
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 )
@@ -22,6 +23,7 @@ type Error struct {
 }
 
 // New creates a new instance of this error.
+//
 // New also records the stack trace at the point it was called.
 func (e Error) New() error {
 	final := e
@@ -29,6 +31,7 @@ func (e Error) New() error {
 }
 
 // WithMessage annotates a new instance of this error with a new message.
+//
 // If err is nil, WithMessage returns nil.
 //
 // WithMessage also records the stack trace at the point it was called.
@@ -112,4 +115,34 @@ func (e *Error) With(what string, values ...interface{}) Error {
 // WithStack creates a new error from a given Error and records its stack.
 func (e Error) WithStack() error {
 	return WithStack(&e)
+}
+
+// MarshalJSON marshals this into JSON
+func (e Error) MarshalJSON() ([]byte, error) {
+	type surrogate Error
+	data, err := json.Marshal(struct{
+		Type string `json:"type"`
+		surrogate
+	}{
+		Type:      "error",
+		surrogate: surrogate(e),
+	})
+	return data, JSONMarshalError.Wrap(err)
+}
+
+// UnmarshalJSON decodes JSON
+func (e *Error) UnmarshalJSON(payload []byte) (err error) {
+	type surrogate Error
+	var inner struct {
+		Type string `json:"type"`
+		surrogate
+	}
+	if err = json.Unmarshal(payload, &inner); err != nil {
+		return JSONUnmarshalError.Wrap(err)
+	}
+	if inner.Type != "error" {
+		return JSONUnmarshalError.Wrap(ArgumentInvalid.With("type", inner.Type))
+	}
+	*e = Error(inner.surrogate)
+	return nil
 }
