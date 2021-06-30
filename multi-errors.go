@@ -1,8 +1,8 @@
 package errors
 
 import (
-	"strings"
 	"fmt"
+	"strings"
 )
 
 // MultiError is used to collect errors, like during a loop
@@ -25,6 +25,7 @@ func (me *MultiError) Error() string {
 }
 
 // Append appends a new error
+//
 // If the error is nil, nothing is added
 func (me *MultiError) Append(err error) *MultiError {
 	if err != nil {
