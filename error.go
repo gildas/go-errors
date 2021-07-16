@@ -17,6 +17,7 @@ type Error struct {
 	// What contains what element is wrong for errors that need it, like NotFoundError
 	What string `json:"what,omitempty"`
 	// Value contains the value that was wrong for errros that need it, like ArgumentInvalidError
+	// TODO: use structpb
 	Value interface{} `json:"value"`
 	// Cause contains the error that caused this error (to wrap a json error in a JSONMarshalError, for example)
 	Cause error

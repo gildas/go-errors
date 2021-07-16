@@ -18,6 +18,7 @@ func NewSentinel(code int, id, message string) *Error {
 //
 // It also records the stack trace at the point it was called.
 func FromHTTPStatusCode(code int) error {
+	// TODO: We should not have HTTPUnauthorized and Unauthorized... They should be merged.
 	switch code {
 	case http.StatusBadGateway:
 		return WithStack(HTTPBadGateway)

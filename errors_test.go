@@ -72,6 +72,57 @@ func (suite *ErrorsSuite) TestCanWrap() {
 	suite.Require().Nil(wrapped, "Wrapped error of nil should be nil")
 }
 
+func (suite *ErrorsSuite) TestCanUnwrap() {
+	var unwrapped error
+	err := errors.JSONUnmarshalError.Wrap(errors.New("Houston, we have a problem"))
+
+	var details *errors.Error
+	suite.Require().True(errors.As(err, &details), "Error should contain an errors.Error")
+	suite.Require().NotNil(details)
+	suite.Assert().Equal("JSON failed to unmarshal data: Houston, we have a problem", details.Error())
+
+	var subdetails *errors.Error
+	unwrapped = errors.Unwrap(err)
+	suite.Assert().False(errors.As(unwrapped, &subdetails), "Unwrapped Error should not contain an errors.Error")
+	suite.Assert().Equal("Houston, we have a problem", unwrapped.Error())
+
+	unwrapped = errors.Unwrap(errors.Unwrap(err))
+	suite.Assert().Nil(unwrapped, "Unwrapping twice should give nil")
+	// TODO: we should have support for deepest, first, etc
+}
+
+func (suite *ErrorsSuite) TestCanUnwrapDeepestError() {
+	err := errors.JSONUnmarshalError.Wrap(errors.Unsupported.With("type", "funky"))
+
+	var details *errors.Error
+	suite.Require().True(errors.As(err, &details), "Error should contain an errors.Error")
+	suite.Assert().Equal("type", details.What)
+	value, ok := details.Value.(string)
+	suite.Require().True(ok, "Value should be a string")
+	suite.Assert().Equal("funky", value)
+
+	// TODO: we should have support for deepest, first, etc
+}
+
+func (suite *ErrorsSuite) TestCanUnwrapJSONError() {
+	var payload struct {
+		Value string `json:"value"`
+	}
+
+	jsonerr := json.Unmarshal([]byte(`{"value": 0`), &payload)
+	err := errors.JSONUnmarshalError.Wrap(jsonerr)
+	suite.Require().NotNil(jsonerr)
+	suite.Require().NotNil(err)
+	suite.T().Logf("JSON Error: %s", jsonerr)
+	suite.T().Logf("     Error: %s", err)
+
+	var details *errors.Error
+	suite.Require().True(errors.As(err, &details), "Error should contain an errors.Error")
+
+	cause := details.Unwrap()
+	suite.Assert().Equal("xxx", cause.Error())
+}
+
 func (suite *ErrorsSuite) TestFailsWithNonErrorTarget() {
 	suite.Assert().False(errors.NotFound.Is(errors.New("Hello")), "Error should not be a pkg/errors.fundamental")
 }
