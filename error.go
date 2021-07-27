@@ -16,7 +16,7 @@ type Error struct {
 	Text string `json:"text"`
 	// What contains what element is wrong for errors that need it, like NotFoundError
 	What string `json:"what,omitempty"`
-	// Value contains the value that was wrong for errros that need it, like ArgumentInvalidError
+	// Value contains the value that was wrong for errors that need it, like ArgumentInvalidError
 	// TODO: use structpb
 	Value interface{} `json:"value"`
 	// Cause contains the error that caused this error (to wrap a json error in a JSONMarshalError, for example)
@@ -29,28 +29,6 @@ type Error struct {
 func (e Error) New() error {
 	final := e
 	return WithStack(&final)
-}
-
-// WithMessage annotates a new instance of this error with a new message.
-//
-// If err is nil, WithMessage returns nil.
-//
-// WithMessage also records the stack trace at the point it was called.
-func (e Error) WithMessage(message string) error {
-	final := e
-	return WithMessage(&final, message)
-}
-
-// WithMessagef annotates a new instance of this error with a new message.
-//
-// The message is a format with eventually some arguments
-//
-// If err is nil, WithMessage returns nil.
-//
-// WithMessage also records the stack trace at the point it was called.
-func (e Error) WithMessagef(format string, args ...interface{}) error {
-	final := e
-	return WithMessagef(&final, format, args...)
 }
 
 // Error returns the string version of this error.

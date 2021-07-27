@@ -173,38 +173,6 @@ func ExampleError() {
 	// error.test.custom
 }
 
-func ExampleError_WithMessage() {
-	sentinel := errors.NewSentinel(500, "error.test.custom", "Test Error")
-	err := sentinel.WithMessage("hmmm... this is bad")
-	if err != nil {
-		fmt.Println(err)
-
-		var details *errors.Error
-		if errors.As(err, &details) {
-			fmt.Println(details.ID)
-		}
-	}
-	// Output:
-	// hmmm... this is bad: Test Error
-	// error.test.custom
-}
-
-func ExampleError_WithMessagef() {
-	sentinel := errors.NewSentinel(500, "error.test.custom", "Test Error")
-	err := sentinel.WithMessagef("hmmm... this is bad %s", "stuff")
-	if err != nil {
-		fmt.Println(err)
-
-		var details *errors.Error
-		if errors.As(err, &details) {
-			fmt.Println(details.ID)
-		}
-	}
-	// Output:
-	// hmmm... this is bad stuff: Test Error
-	// error.test.custom
-}
-
 func ExampleError_WithStack() {
 	err := errors.NotImplemented.WithStack()
 	if err != nil {
