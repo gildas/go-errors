@@ -2,14 +2,14 @@ package errors
 
 import (
 	goerrors "errors"
-	pkerrors "github.com/pkg/errors"
+	"fmt"
 )
 
 // New returns a new error with the supplied message.
 //
 // New also records the stack trace at the point it was called.
 func New(message string) error {
-	return pkerrors.New(message)
+	return Error{Text: message}.WithStack()
 }
 
 // Errorf formats according to a format specifier and returns the string
@@ -17,14 +17,27 @@ func New(message string) error {
 //
 // Errorf also records the stack trace at the point it was called.
 func Errorf(format string, args ...interface{}) error {
-	return pkerrors.Errorf(format, args...)
+	return Error{Text: fmt.Sprintf(format, args...)}.WithStack()
 }
 
 // WithStack annotates err with a stack trace at the point WithStack was called.
 //
 // If err is nil, WithStack returns nil.
 func WithStack(err error) error {
-	return pkerrors.WithStack(err)
+	return Error{Cause: err}.WithStack()
+}
+
+// WithoutStack removes the stack trace from the current error
+//
+// If err is nil, WithStack returns nil.
+func WithoutStack(err error) error {
+	if err == nil {
+		return nil
+	}
+	if err0, ok := err.(Error); ok {
+		return err0.WithoutStack()
+	}
+	return err
 }
 
 // Wrap returns an error annotating err with a stack trace
@@ -32,7 +45,7 @@ func WithStack(err error) error {
 //
 // If err is nil, Wrap returns nil.
 func Wrap(err error, message string) error {
-	return pkerrors.Wrap(err, message)
+	return Error{Text: message}.Wrap(err)
 }
 
 // Wrapf returns an error annotating err with a stack trace
@@ -40,21 +53,21 @@ func Wrap(err error, message string) error {
 //
 // If err is nil, Wrapf returns nil.
 func Wrapf(err error, format string, args ...interface{}) error {
-	return pkerrors.Wrapf(err, format, args...)
+	return Error{Text: fmt.Sprintf(format, args...)}.Wrap(err)
 }
 
 // WithMessage annotates err with a new message.
 //
 // If err is nil, WithMessage returns nil.
 func WithMessage(err error, message string) error {
-	return pkerrors.WithMessage(err, message)
+	return Error{Text: message}.Wrap(err)
 }
 
 // WithMessagef annotates err with the format specifier.
 //
 // If err is nil, WithMessagef returns nil.
 func WithMessagef(err error, format string, args ...interface{}) error {
-	return pkerrors.WithMessagef(err, format, args...)
+	return Error{Text: fmt.Sprintf(format, args...)}.Wrap(err)
 }
 
 //***************** goerrors

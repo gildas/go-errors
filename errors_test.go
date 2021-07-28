@@ -54,7 +54,13 @@ func (suite *ErrorsSuite) TestCanMatchError() {
 func (suite *ErrorsSuite) TestCanTellIsError() {
 	err := errors.NotFound.With("key")
 	suite.Require().NotNil(err, "err should not be nil")
-	suite.Assert().True(errors.Is(err, errors.NotFound), "err should match a NotFoundError (pointer)")
+	suite.Assert().True(errors.Is(err, errors.NotFound), "err should match a NotFoundError")
+	suite.Assert().True(errors.NotFound.Is(err), "err should match a NotFoundError")
+
+	err = fmt.Errorf("simple error")
+	suite.Require().NotNil(err, "err should not be nil")
+	suite.Assert().False(errors.Is(err, errors.NotFound), "err should not match an NotFoundError")
+	suite.Assert().False(errors.NotFound.Is(err), "err should not match an NotFoundError")
 }
 
 func (suite *ErrorsSuite) TestCanTellContainsAnError() {
@@ -64,21 +70,25 @@ func (suite *ErrorsSuite) TestCanTellContainsAnError() {
 	suite.Assert().True(errors.As(err, &details), "err should contain an errors.Error")
 }
 
-func (suite *ErrorsSuite) TestCanTellDoesNotContainAnError() {
-	err := errors.Errorf("Houston, we have a problem")
-	suite.Require().NotNil(err, "err should not be nil")
-	suite.Assert().False(errors.Is(err, errors.Error{}), "err should not contain an errors.Error")
-	var inner errors.Error
-	suite.Assert().False(errors.As(err, &inner), "err should not contain an errors.Error")
-}
-
 func (suite *ErrorsSuite) TestCanWrap() {
-	err := errors.Errorf("Houston, we have a problem")
-	wrapped := errors.NotImplemented.Wrap(err)
+	wrapped := errors.NotImplemented.Wrap(errors.Errorf("Houston, we have a problem"))
 	suite.Require().NotNil(wrapped)
 	suite.Assert().True(errors.Is(wrapped, errors.NotImplemented), "wrapped err should be a Not Implemented Error")
 	wrapped = errors.NotImplemented.Wrap(nil)
 	suite.Require().Nil(wrapped, "Wrapped error of nil should be nil")
+}
+
+func (suite *ErrorsSuite) TestCanRemoveStackTrace() {
+	suite.Assert().Nil(errors.WithoutStack(nil))
+
+	err := errors.WithoutStack(errors.NotImplemented.WithStack())
+	suite.Require().NotNil(err)
+	check, ok := err.(errors.Error)
+	suite.Require().True(ok, "err should be an errors.Error")
+	suite.Assert().Empty(check.Stack)
+
+	err = errors.WithoutStack(fmt.Errorf("simple error"))
+	suite.Require().NotNil(err)
 }
 
 func (suite *ErrorsSuite) TestCanUnwrap() {
@@ -206,7 +216,7 @@ func(suite *ErrorsSuite) TestCanFormatStackTrace() {
 	actual, ok := err.(errors.Error)
 	suite.Require().True(ok)
 	suite.Require().NotEmpty(actual.Stack, "The stack should not be empty")
-	suite.Assert().Contains(fmt.Sprintf("%v", actual.Stack), "[errors_test.go:205 value.go")
+	suite.Assert().Contains(fmt.Sprintf("%v", actual.Stack), "[errors_test.go:215 value.go")
 	suite.Assert().Contains(fmt.Sprintf("%s", actual.Stack), "[errors_test.go value.go")
 }
 
@@ -215,21 +225,31 @@ func (suite *ErrorsSuite) TestWrappers() {
 
 	err = errors.New("Hello World")
 	suite.Assert().NotNil(err)
+	suite.Assert().Equal("Hello World", fmt.Sprintf("%s", err))
 
 	err = errors.Errorf("Hello World")
 	suite.Assert().NotNil(err)
+	suite.Assert().Equal("Hello World", fmt.Sprintf("%s", err))
 
-	err = errors.WithMessage(errors.NotFound, "Hello World")
+	err = errors.WithStack(fmt.Errorf("Hello World"))
 	suite.Assert().NotNil(err)
+	suite.Assert().Equal("Hello World", fmt.Sprintf("%s", err))
 
-	err = errors.WithMessagef(errors.NotFound, "Hello World")
+	err = errors.WithMessage(errors.NotFound.With("greetings", "hi"), "Hello World")
 	suite.Assert().NotNil(err)
+	suite.Assert().Equal("Hello World: greetings hi Not Found", fmt.Sprintf("%s", err))
 
-	err = errors.Wrap(errors.NotFound, "Hello World")
+	err = errors.WithMessagef(errors.NotFound.With("greetings", "hi"), "Hello %s", "World")
 	suite.Assert().NotNil(err)
+	suite.Assert().Equal("Hello World: greetings hi Not Found", fmt.Sprintf("%s", err))
 
-	err = errors.Wrapf(errors.NotFound, "Hello World")
+	err = errors.Wrap(errors.NotFound.With("greetings", "hi"), "Hello World")
 	suite.Assert().NotNil(err)
+	suite.Assert().Equal("Hello World: greetings hi Not Found", fmt.Sprintf("%s", err))
+
+	err = errors.Wrapf(errors.NotFound.With("greetings", "hi"), "Hello %s", "World")
+	suite.Assert().NotNil(err)
+	suite.Assert().Equal("Hello World: greetings hi Not Found", fmt.Sprintf("%s", err))
 
 	unwrapped := errors.Unwrap(err)
 	suite.Assert().NotNil(unwrapped)

@@ -129,7 +129,9 @@ func (e Error) Error() string {
 		fmt.Fprintf(&sb, e.Text, e.What, e.Value)
 	}
 	if e.Cause != nil {
-		sb.WriteString(": ")
+		if len(e.Text) > 0 {
+			sb.WriteString(": ")
+		}
 		sb.WriteString(e.Cause.Error())
 	}
 	return sb.String()
