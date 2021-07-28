@@ -107,6 +107,13 @@ func (e Error) WithStack() error {
 	return final
 }
 
+// WithoutStack creates a new error from a given Error and records its stack.
+func (e Error) WithoutStack() error {
+	final := e
+	final.Stack = StackTrace{}
+	return final
+}
+
 // Error returns the string version of this error.
 //
 // implements error interface.
