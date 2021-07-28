@@ -71,19 +71,19 @@ func (frame StackFrame) Format(s fmt.State, verb rune) {
 	case 's':
 		switch {
 		case s.Flag('+'):
-			io.WriteString(s, frame.FuncName())
-			io.WriteString(s, "\n\t")
-			io.WriteString(s, frame.Filepath())
+			_, _ = io.WriteString(s, frame.FuncName())
+			_, _ = io.WriteString(s, "\n\t")
+			_, _ = io.WriteString(s, frame.Filepath())
 		default:
-			io.WriteString(s, path.Base(frame.Filepath()))
+			_, _ = io.WriteString(s, path.Base(frame.Filepath()))
 		}
 	case 'd':
-		io.WriteString(s, strconv.Itoa(frame.Line()))
+		_, _ = io.WriteString(s, strconv.Itoa(frame.Line()))
 	case 'n':
-		io.WriteString(s, funcname(frame.FuncName()))
+		_, _ = io.WriteString(s, funcname(frame.FuncName()))
 	case 'v':
 		frame.Format(s, 's')
-		io.WriteString(s, ":")
+		_, _ = io.WriteString(s, ":")
 		frame.Format(s, 'd')
 	}
 }
