@@ -22,9 +22,9 @@ type Error struct {
 	// TODO: use structpb
 	Value interface{} `json:"value"`
 	// Cause contains the error that caused this error (to wrap a json error in a JSONMarshalError, for example)
-	Cause error
+	Cause error `json:"cause,omitempty"`
   // stack contains the StackTrace when this Error is instanciated
-	Stack StackTrace
+	Stack StackTrace `json:"stack,omitempty"`
 }
 
 // New creates a new instance of this error.

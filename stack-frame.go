@@ -1,6 +1,7 @@
 package errors
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"path"
@@ -86,6 +87,20 @@ func (frame StackFrame) Format(s fmt.State, verb rune) {
 		_, _ = io.WriteString(s, ":")
 		frame.Format(s, 'd')
 	}
+}
+
+// MarshalJSON marshals this into JSON
+func (frame StackFrame) MarshalJSON() ([]byte, error) {
+	data, err := json.Marshal(struct{
+		FuncName string `json:"func"`
+		FuncLine int    `json:"line"`
+		FuncPath string `json:"path"`
+	}{
+		FuncName: frame.FuncName(),
+		FuncLine: frame.Line(),
+		FuncPath: frame.Filepath(),
+	})
+	return data, JSONMarshalError.Wrap(err)
 }
 
 // funcname removes the path prefix component of a function's name
