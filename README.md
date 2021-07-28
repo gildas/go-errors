@@ -6,11 +6,11 @@
 [![Report](https://goreportcard.com/badge/github.com/gildas/go-errors)](https://goreportcard.com/report/github.com/gildas/go-errors)  
 
 ![master](https://img.shields.io/badge/branch-master-informational)
-[![Test (master)](https://github.com/gildas/go-errors/workflows/Test/badge.svg?branch=master)](https://github.com/gildas/go-errors/actions/workflows/test.yml)
+[![Test](https://github.com/gildas/go-errors/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/gildas/go-errors/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/gildas/go-errors/branch/master/graph/badge.svg?token=gFCzS9b7Mu)](https://codecov.io/gh/gildas/go-errors/branch/master)
 
 ![dev](https://img.shields.io/badge/branch-dev-informational)
-[![Test (dev)](https://github.com/gildas/go-errors/workflows/Test/badge.svg?branch=dev)](https://github.com/gildas/go-errors/actions/workflows/test.yml)
+[![Test](https://github.com/gildas/go-errors/actions/workflows/test.yml/badge.svg?branch=dev)](https://github.com/gildas/go-errors/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/gildas/go-errors/branch/dev/graph/badge.svg?token=gFCzS9b7Mu)](https://codecov.io/gh/gildas/go-errors/branch/dev)
 
 This is a library for handling errors in Go language.
