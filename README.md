@@ -24,7 +24,7 @@ func findme(stuff map[string]string, key string) (string, error) {
     if value, found := stuff[key]; found {
         return value, nil
     }
-    return "", errors.NotFound.With(key).WithStack()
+    return "", errors.NotFound.With(key)
 }
 
 func main() {
@@ -47,6 +47,20 @@ func main() {
     if errors.Is(err, errors.NotFound) {
         var details *errors.Error
         if errors.As(err, &details) {
+            fmt.Fprintf(os.Stderr, "Could not find %s", details.What)
+        }
+    }
+}
+```
+
+When several `errors.Error` are chained up, this can be used to extract the ones you want:
+```go
+func main() {
+    var allstuff[string]string
+    //...
+    value, err := findme("key1")
+    if errors.Is(err, errors.NotFound) {
+        if details, found := errors.NotFound.Extract(err); found {
             fmt.Fprintf(os.Stderr, "Could not find %s", details.What)
         }
     }
