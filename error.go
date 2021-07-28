@@ -45,9 +45,6 @@ func (e Error) GetID() string {
 //
 // implements errors.Is interface (package "errors").
 func (e Error) Is(target error) bool {
-	if pactual, ok := target.(*Error); ok {
-		return e.ID == pactual.ID
-	}
 	if actual, ok := target.(Error); ok {
 		return e.ID == actual.ID
 	}
