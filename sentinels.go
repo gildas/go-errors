@@ -10,99 +10,100 @@ import (
 // A sentinel is an Error that hasn't been decorated with a stack trace
 //
 // Typically, it can be used to create error that can be matched later
-func NewSentinel(code int, id, message string) *Error {
-	return &Error{Code: code, ID: id, Text: message}
+func NewSentinel(code int, id, message string) Error {
+	return Error{Code: code, ID: id, Text: message}
 }
 
 // FromHTTPStatusCode creates a new error of the sentinel that matches the given HTTP status code.
 //
 // It also records the stack trace at the point it was called.
 func FromHTTPStatusCode(code int) error {
+	// TODO: We should not have HTTPUnauthorized and Unauthorized... They should be merged.
 	switch code {
 	case http.StatusBadGateway:
-		return WithStack(HTTPBadGateway)
+		return HTTPBadGateway.WithStack()
 	case http.StatusBadRequest:
-		return WithStack(HTTPBadRequest)
+		return HTTPBadRequest.WithStack()
 	case http.StatusForbidden:
-		return WithStack(HTTPForbidden)
+		return HTTPForbidden.WithStack()
 	case http.StatusInternalServerError:
-		return WithStack(HTTPInternalServerError)
+		return HTTPInternalServerError.WithStack()
 	case http.StatusMethodNotAllowed:
-		return WithStack(HTTPMethodNotAllowed)
+		return HTTPMethodNotAllowed.WithStack()
 	case http.StatusNotFound:
-		return WithStack(HTTPNotFound)
+		return HTTPNotFound.WithStack()
 	case http.StatusNotImplemented:
-		return WithStack(HTTPNotImplemented)
+		return HTTPNotImplemented.WithStack()
 	case http.StatusServiceUnavailable:
-		return WithStack(HTTPServiceUnavailable)
+		return HTTPServiceUnavailable.WithStack()
 	case http.StatusUnauthorized:
-		return WithStack(HTTPUnauthorized)
+		return HTTPUnauthorized.WithStack()
 	case http.StatusConflict:
-		return WithStack(HTTPStatusConflict)
+		return HTTPStatusConflict.WithStack()
 	case http.StatusExpectationFailed:
-		return WithStack(HTTPStatusExpectationFailed)
+		return HTTPStatusExpectationFailed.WithStack()
 	case http.StatusFailedDependency:
-		return WithStack(HTTPStatusFailedDependency)
+		return HTTPStatusFailedDependency.WithStack()
 	case http.StatusGatewayTimeout:
-		return WithStack(HTTPStatusGatewayTimeout)
+		return HTTPStatusGatewayTimeout.WithStack()
 	case http.StatusGone:
-		return WithStack(HTTPStatusGone)
+		return HTTPStatusGone.WithStack()
 	case http.StatusHTTPVersionNotSupported:
-		return WithStack(HTTPStatusHTTPVersionNotSupported)
+		return HTTPStatusHTTPVersionNotSupported.WithStack()
 	case http.StatusInsufficientStorage:
-		return WithStack(HTTPStatusInsufficientStorage)
+		return HTTPStatusInsufficientStorage.WithStack()
 	case http.StatusLengthRequired:
-		return WithStack(HTTPStatusLengthRequired)
+		return HTTPStatusLengthRequired.WithStack()
 	case http.StatusLocked:
-		return WithStack(HTTPStatusLocked)
+		return HTTPStatusLocked.WithStack()
 	case http.StatusLoopDetected:
-		return WithStack(HTTPStatusLoopDetected)
+		return HTTPStatusLoopDetected.WithStack()
 	case http.StatusMisdirectedRequest:
-		return WithStack(HTTPStatusMisdirectedRequest)
+		return HTTPStatusMisdirectedRequest.WithStack()
 	case http.StatusNetworkAuthenticationRequired:
-		return WithStack(HTTPStatusNetworkAuthenticationRequired)
+		return HTTPStatusNetworkAuthenticationRequired.WithStack()
 	case http.StatusNotAcceptable:
-		return WithStack(HTTPStatusNotAcceptable)
+		return HTTPStatusNotAcceptable.WithStack()
 	case http.StatusNotExtended:
-		return WithStack(HTTPStatusNotExtended)
+		return HTTPStatusNotExtended.WithStack()
 	case http.StatusPaymentRequired:
-		return WithStack(HTTPStatusPaymentRequired)
+		return HTTPStatusPaymentRequired.WithStack()
 	case http.StatusPreconditionFailed:
-		return WithStack(HTTPStatusPreconditionFailed)
+		return HTTPStatusPreconditionFailed.WithStack()
 	case http.StatusPreconditionRequired:
-		return WithStack(HTTPStatusPreconditionRequired)
+		return HTTPStatusPreconditionRequired.WithStack()
 	case http.StatusProxyAuthRequired:
-		return WithStack(HTTPStatusProxyAuthRequired)
+		return HTTPStatusProxyAuthRequired.WithStack()
 	case http.StatusRequestEntityTooLarge:
-		return WithStack(HTTPStatusRequestEntityTooLarge)
+		return HTTPStatusRequestEntityTooLarge.WithStack()
 	case http.StatusRequestHeaderFieldsTooLarge:
-		return WithStack(HTTPStatusRequestHeaderFieldsTooLarge)
+		return HTTPStatusRequestHeaderFieldsTooLarge.WithStack()
 	case http.StatusRequestTimeout:
-		return WithStack(HTTPStatusRequestTimeout)
+		return HTTPStatusRequestTimeout.WithStack()
 	case http.StatusRequestURITooLong:
-		return WithStack(HTTPStatusRequestURITooLong)
+		return HTTPStatusRequestURITooLong.WithStack()
 	case http.StatusRequestedRangeNotSatisfiable:
-		return WithStack(HTTPStatusRequestedRangeNotSatisfiable)
+		return HTTPStatusRequestedRangeNotSatisfiable.WithStack()
 	case http.StatusTeapot:
-		return WithStack(HTTPStatusTeapot)
+		return HTTPStatusTeapot.WithStack()
 	case http.StatusTooEarly:
-		return WithStack(HTTPStatusTooEarly)
+		return HTTPStatusTooEarly.WithStack()
 	case http.StatusTooManyRequests:
-		return WithStack(HTTPStatusTooManyRequests)
+		return HTTPStatusTooManyRequests.WithStack()
 	case http.StatusUnavailableForLegalReasons:
-		return WithStack(HTTPStatusUnavailableForLegalReasons)
+		return HTTPStatusUnavailableForLegalReasons.WithStack()
 	case http.StatusUnprocessableEntity:
-		return WithStack(HTTPStatusUnprocessableEntity)
+		return HTTPStatusUnprocessableEntity.WithStack()
 	case http.StatusUnsupportedMediaType:
-		return WithStack(HTTPStatusUnsupportedMediaType)
+		return HTTPStatusUnsupportedMediaType.WithStack()
 	case http.StatusUpgradeRequired:
-		return WithStack(HTTPStatusUpgradeRequired)
+		return HTTPStatusUpgradeRequired.WithStack()
 	case http.StatusUseProxy:
-		return WithStack(HTTPStatusUseProxy)
+		return HTTPStatusUseProxy.WithStack()
 	case http.StatusVariantAlsoNegotiates:
-		return WithStack(HTTPStatusVariantAlsoNegotiates)
+		return HTTPStatusVariantAlsoNegotiates.WithStack()
 	default:
-		return WithStack(NewSentinel(code, fmt.Sprintf("error.http.%d", code), fmt.Sprintf("HTTP Status %d", code)))
+		return NewSentinel(code, fmt.Sprintf("error.http.%d", code), fmt.Sprintf("HTTP Status %d", code)).WithStack()
 	}
 }
 
@@ -125,6 +126,9 @@ var EnvironmentInvalid = NewSentinel(http.StatusBadRequest, "error.environment.i
 
 // DuplicateFound is used when something is found but it should not have been.
 var DuplicateFound = NewSentinel(http.StatusFound, "error.found", "%s %s Found")
+
+// InvalidType is used when a type is not valid.
+var InvalidType = NewSentinel(http.StatusBadRequest, "error.type.invalid", "Invalid Type %s, expected: %s")
 
 // InvalidURL is used when a URL is not valid.
 var InvalidURL = NewSentinel(http.StatusBadRequest, "error.url.invalid", "Invalid URL %s")
