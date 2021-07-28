@@ -1,12 +1,19 @@
 # go-errors
 
-[![GoDoc](https://godoc.org/github.com/gildas/go-errors?status.svg)](https://godoc.org/github.com/gildas/go-errors)
-This is a library for handling errors in Go language.
+![GoVersion](https://img.shields.io/github/go-mod/go-version/gildas/go-errors)
+[![GoDoc](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat-square)](https://pkg.go.dev/github.com/gildas/go-errors) 
+[![License](https://img.shields.io/github/license/gildas/go-errors)](https://github.com/gildas/go-errors/blob/master/LICENSE) 
+[![Report](https://goreportcard.com/badge/github.com/gildas/go-errors)](https://goreportcard.com/report/github.com/gildas/go-errors)  
 
-|  |   |   |   |
----|---|---|---|
-master | [![Build Status](https://dev.azure.com/keltiek/gildas/_apis/build/status/gildas.go-errors?branchName=master)](https://dev.azure.com/keltiek/gildas/_build/latest?definitionId=2&branchName=master) | [![Tests](https://img.shields.io/azure-devops/tests/keltiek/gildas/2/master)](https://dev.azure.com/keltiek/gildas/_build/latest?definitionId=2&branchName=master) | [![coverage](https://img.shields.io/azure-devops/coverage/keltiek/gildas/2/master)](https://dev.azure.com/keltiek/gildas/_build/latest?definitionId=2&branchName=master&view=codecoverage-tab)  
-dev | [![Build Status](https://dev.azure.com/keltiek/gildas/_apis/build/status/gildas.go-errors?branchName=dev)](https://dev.azure.com/keltiek/gildas/_build/latest?definitionId=2&branchName=dev) | [![Tests](https://img.shields.io/azure-devops/tests/keltiek/gildas/2/dev)](https://dev.azure.com/keltiek/gildas/_build/latest?definitionId=2&branchName=dev) | [![coverage](https://img.shields.io/azure-devops/coverage/keltiek/gildas/2/dev)](https://dev.azure.com/keltiek/gildas/_build/latest?definitionId=2&branchName=dev&view=codecoverage-tab)  
+![master](https://img.shields.io/badge/branch-master-informational)
+[![Test](https://github.com/gildas/go-errors/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/gildas/go-errors/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/gildas/go-errors/branch/master/graph/badge.svg?token=gFCzS9b7Mu)](https://codecov.io/gh/gildas/go-errors/branch/master)
+
+![dev](https://img.shields.io/badge/branch-dev-informational)
+[![Test](https://github.com/gildas/go-errors/actions/workflows/test.yml/badge.svg?branch=dev)](https://github.com/gildas/go-errors/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/gildas/go-errors/branch/dev/graph/badge.svg?token=gFCzS9b7Mu)](https://codecov.io/gh/gildas/go-errors/branch/dev)
+
+This is a library for handling errors in Go language.
 
 ## Usage
 
@@ -24,7 +31,7 @@ func findme(stuff map[string]string, key string) (string, error) {
     if value, found := stuff[key]; found {
         return value, nil
     }
-    return "", errors.NotFound.With(key).WithStack()
+    return "", errors.NotFound.With(key)
 }
 
 func main() {
@@ -47,6 +54,20 @@ func main() {
     if errors.Is(err, errors.NotFound) {
         var details *errors.Error
         if errors.As(err, &details) {
+            fmt.Fprintf(os.Stderr, "Could not find %s", details.What)
+        }
+    }
+}
+```
+
+When several `errors.Error` are chained up, this can be used to extract the ones you want:
+```go
+func main() {
+    var allstuff[string]string
+    //...
+    value, err := findme("key1")
+    if errors.Is(err, errors.NotFound) {
+        if details, found := errors.NotFound.Extract(err); found {
             fmt.Fprintf(os.Stderr, "Could not find %s", details.What)
         }
     }
