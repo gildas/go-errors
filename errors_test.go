@@ -3,6 +3,7 @@ package errors_test
 import (
 	"bytes"
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"io"
 	"net/http"
@@ -35,10 +36,9 @@ func (suite *ErrorsSuite) TestCanCreate() {
 	suite.Require().NotNil(err, "newly created sentinel cannot be nil")
 }
 
-func (suite *ErrorsSuite) TestCanTellIsError() {
+func (suite *ErrorsSuite) TestCanMatchError() {
 	err := errors.NotFound.With("key")
 	suite.Require().NotNil(err, "err should not be nil")
-	suite.Assert().True(errors.Is(err, errors.NotFound), "err should match a NotFoundError (pointer)")
 
 	var details errors.Error
 	suite.Require().True(errors.As(err, &details), "err should contain an errors.Error")
@@ -49,6 +49,12 @@ func (suite *ErrorsSuite) TestCanTellIsError() {
 	suite.Assert().True(errors.Is(err, errors.ArgumentMissing), "err should match a ArgumentMissingError (pointer)")
 	suite.Require().True(errors.As(err, &details), "err should contain an errors.Error")
 	suite.Assert().Equal("key", details.What)
+}
+
+func (suite *ErrorsSuite) TestCanTellIsError() {
+	err := errors.NotFound.With("key")
+	suite.Require().NotNil(err, "err should not be nil")
+	suite.Assert().True(errors.Is(err, errors.NotFound), "err should match a NotFoundError (pointer)")
 }
 
 func (suite *ErrorsSuite) TestCanTellContainsAnError() {
@@ -83,8 +89,8 @@ func (suite *ErrorsSuite) TestCanUnwrap() {
 
 func (suite *ErrorsSuite) TestCanExtractError() {
 	err := errors.JSONUnmarshalError.Wrap(errors.Unsupported.With("genre", "funky"))
-
 	details, found := errors.Unsupported.Extract(err)
+
 	suite.Require().True(found, "Error does not contain an Unsupported Error")
 	suite.Require().Equal(errors.Unsupported.ID, details.ID)
 	suite.Assert().Equal("genre", details.What)
@@ -92,6 +98,13 @@ func (suite *ErrorsSuite) TestCanExtractError() {
 	value, ok := details.Value.(string)
 	suite.Require().True(ok, "Value should be a string")
 	suite.Assert().Equal("funky", value)
+}
+
+func (suite *ErrorsSuite) TestFailsExtractErrorWithWrongSentinel() {
+	err := errors.JSONUnmarshalError.Wrap(errors.Unsupported.With("genre", "funky"))
+	_, found := errors.ArgumentInvalid.Extract(err)
+
+	suite.Require().False(found, "Error should not contain an ArgumentInvalid Error")
 }
 
 func (suite *ErrorsSuite) TestCanUnwrapJSONError() {
@@ -113,6 +126,88 @@ func (suite *ErrorsSuite) TestCanUnwrapJSONError() {
 
 func (suite *ErrorsSuite) TestFailsWithNonErrorTarget() {
 	suite.Assert().False(errors.NotFound.Is(errors.New("Hello")), "Error should not be a pkg/errors.fundamental")
+}
+
+func (suite *ErrorsSuite) TestCanMarshalError() {
+	expected := `{"type": "error", "id": "error.argument.invalid", "code": 400, "text": "Argument %s is invalid (value: %v)", "what": "key", "value": "value"}`
+	testerr := errors.ArgumentInvalid.With("key", "value")
+	payload, err := json.Marshal(testerr.(errors.Error).WithoutStack())
+	suite.Require().Nil(err)
+	suite.Assert().JSONEq(expected, string(payload))
+	_, err = json.Marshal(testerr)
+	suite.Require().Nil(err)
+}
+
+func (suite *ErrorsSuite) TestCanUnmarshalError() {
+	payload := `{"type": "error", "id": "error.argument.invalid", "code": 400, "text": "Argument %s is invalid (value: %v)", "what": "key", "value": "value"}`
+	testerr := errors.Error{}
+	err := json.Unmarshal([]byte(payload), &testerr)
+	suite.Require().Nil(err)
+	suite.Assert().Equal(400, testerr.Code)
+	suite.Assert().Equal("error.argument.invalid", testerr.ID)
+}
+
+func (suite *ErrorsSuite) TestFailsUnmarshallErrorWithWrongPayload() {
+	payload := `{"type": "error", "id": 1000, "code": 400, "text": "Argument %s is invalid (value: %v)", "what": "key", "value": "value"}`
+	testerr := errors.Error{}
+	err := json.Unmarshal([]byte(payload), &testerr)
+	suite.Require().NotNil(err)
+	suite.Assert().True(errors.Is(err, errors.JSONUnmarshalError), "Error should be a JSONUnmarshalError")
+	suite.Assert().Equal("json: cannot unmarshal number into Go struct field .id of type string", errors.Unwrap(err).Error())
+}
+
+func (suite *ErrorsSuite) TestFailsUnmarshallErrorWithWrongType() {
+	payload := `{"type": "blob", "id": "error.argument.invalid", "code": 400, "text": "Argument %s is invalid (value: %v)", "what": "key", "value": "value"}`
+	testerr := errors.Error{}
+	err := json.Unmarshal([]byte(payload), &testerr)
+	suite.Require().NotNil(err)
+	suite.Assert().True(errors.Is(err, errors.JSONUnmarshalError), "Error should be a JSONUnmarshalError")
+	suite.Assert().True(errors.Is(err, errors.InvalidType), "Error should be an InvalidType")
+	details, found := errors.InvalidType.Extract(err)
+	suite.Require().True(found, "Error should be an errors.InvalidType")
+	suite.Assert().Equal("error", details.What)
+	suite.Assert().Equal("blob", details.Value.(string))
+}
+
+func(suite *ErrorsSuite) TestCanFormatStackFrame() {
+	err := errors.NotImplemented.WithStack()
+	actual, ok := err.(errors.Error)
+	suite.Require().True(ok)
+	suite.Require().NotEmpty(actual.Stack, "The stack should not be empty")
+	frame := actual.Stack[0]
+	suite.Assert().Equal("(*ErrorsSuite).TestCanFormatStackFrame", fmt.Sprintf("%n", frame))
+}
+
+func (suite *ErrorsSuite) TestCanMarshalStackFrameAsText() {
+	err := errors.NotImplemented.WithStack()
+	actual, ok := err.(errors.Error)
+	suite.Require().True(ok)
+	suite.Require().NotEmpty(actual.Stack, "The stack should not be empty")
+	frame := actual.Stack[0]
+	payload, xmlerr := xml.Marshal(frame)
+	suite.Require().Nil(xmlerr)
+	pattern := regexp.MustCompile(`<StackFrame>.*TestCanMarshalStackFrameAsText .*/errors_test.go:[0-9]+</StackFrame>`)
+	suite.Assert().Regexp(pattern, string(payload))
+}
+
+func (suite *ErrorsSuite) TestCanUseInvalidStackFrame() {
+	frame := errors.StackFrame(0)
+	suite.Assert().Equal("unknown", frame.FuncName())
+	suite.Assert().Equal(0, frame.Line())
+	suite.Assert().Equal("unknown", frame.Filepath())
+	payload, xmlerr := xml.Marshal(frame)
+	suite.Require().Nil(xmlerr)
+	pattern := regexp.MustCompile(`<StackFrame>unknown</StackFrame>`)
+	suite.Assert().Regexp(pattern, string(payload))
+}
+
+func(suite *ErrorsSuite) TestCanFormatStackTrace() {
+	err := errors.NotImplemented.WithStack()
+	actual, ok := err.(errors.Error)
+	suite.Require().True(ok)
+	suite.Require().NotEmpty(actual.Stack, "The stack should not be empty")
+	suite.Assert().Contains(fmt.Sprintf("%v", actual.Stack), "[errors_test.go:205 value.go")
+	suite.Assert().Contains(fmt.Sprintf("%s", actual.Stack), "[errors_test.go value.go")
 }
 
 func (suite *ErrorsSuite) TestWrappers() {
