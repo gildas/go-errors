@@ -24,6 +24,9 @@ func Errorf(format string, args ...interface{}) error {
 //
 // If err is nil, WithStack returns nil.
 func WithStack(err error) error {
+	if err == nil {
+		return nil
+	}
 	return Error{Cause: err}.WithStack()
 }
 
@@ -45,6 +48,9 @@ func WithoutStack(err error) error {
 //
 // If err is nil, Wrap returns nil.
 func Wrap(err error, message string) error {
+	if err == nil {
+		return nil
+	}
 	return Error{Text: message}.Wrap(err)
 }
 
@@ -53,6 +59,9 @@ func Wrap(err error, message string) error {
 //
 // If err is nil, Wrapf returns nil.
 func Wrapf(err error, format string, args ...interface{}) error {
+	if err == nil {
+		return nil
+	}
 	return Error{Text: fmt.Sprintf(format, args...)}.Wrap(err)
 }
 
@@ -60,6 +69,9 @@ func Wrapf(err error, format string, args ...interface{}) error {
 //
 // If err is nil, WithMessage returns nil.
 func WithMessage(err error, message string) error {
+	if err == nil {
+		return nil
+	}
 	return Error{Text: message}.Wrap(err)
 }
 
@@ -67,6 +79,9 @@ func WithMessage(err error, message string) error {
 //
 // If err is nil, WithMessagef returns nil.
 func WithMessagef(err error, format string, args ...interface{}) error {
+	if err == nil {
+		return nil
+	}
 	return Error{Text: fmt.Sprintf(format, args...)}.Wrap(err)
 }
 
