@@ -141,10 +141,14 @@ func (suite *ErrorsSuite) TestFailsWithNonErrorTarget() {
 func (suite *ErrorsSuite) TestCanMarshalError() {
 	expected := `{"type": "error", "id": "error.argument.invalid", "code": 400, "text": "Argument %s is invalid (value: %v)", "what": "key", "value": "value"}`
 	testerr := errors.ArgumentInvalid.With("key", "value")
-	payload, err := json.Marshal(testerr.(errors.Error).WithoutStack())
+	payload, err := json.Marshal(testerr)
 	suite.Require().Nil(err)
 	suite.Assert().JSONEq(expected, string(payload))
-	_, err = json.Marshal(testerr)
+}
+
+func (suite *ErrorsSuite) TestCanMarshalStackTrace() {
+	testerr := errors.ArgumentInvalid.With("key", "value")
+	_, err := json.Marshal(testerr.(errors.Error).Stack)
 	suite.Require().Nil(err)
 }
 
@@ -216,7 +220,7 @@ func(suite *ErrorsSuite) TestCanFormatStackTrace() {
 	actual, ok := err.(errors.Error)
 	suite.Require().True(ok)
 	suite.Require().NotEmpty(actual.Stack, "The stack should not be empty")
-	suite.Assert().Contains(fmt.Sprintf("%v", actual.Stack), "[errors_test.go:215 value.go")
+	suite.Assert().Contains(fmt.Sprintf("%v", actual.Stack), "[errors_test.go:219 value.go")
 	suite.Assert().Contains(fmt.Sprintf("%s", actual.Stack), "[errors_test.go value.go")
 }
 
