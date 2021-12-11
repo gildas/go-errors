@@ -23,7 +23,7 @@ type Error struct {
 	Value interface{} `json:"value"`
 	// Cause contains the error that caused this error (to wrap a json error in a JSONMarshalError, for example)
 	Cause error `json:"cause,omitempty"`
-  // stack contains the StackTrace when this Error is instanciated
+	// stack contains the StackTrace when this Error is instanciated
 	Stack StackTrace `json:"-"`
 }
 
@@ -54,7 +54,7 @@ func (e Error) Is(target error) bool {
 // Extract extracts an Error with the same ID as this Error from the error chain
 func (e Error) Extract(err error) (extracted Error, found bool) {
 	for err != nil {
-		if identifiable, ok := err.(interface{ GetID() string}); ok && identifiable.GetID() == e.GetID() {
+		if identifiable, ok := err.(interface{ GetID() string }); ok && identifiable.GetID() == e.GetID() {
 			extracted := Error{}
 			if As(err, &extracted) {
 				return extracted, true
@@ -180,14 +180,14 @@ func (e Error) Format(state fmt.State, verb rune) {
 	case 's':
 		_, _ = io.WriteString(state, e.Error())
 	case 'q':
-		_, _ = fmt.Fprintf(state,"%q", e.Error())
+		_, _ = fmt.Fprintf(state, "%q", e.Error())
 	}
 }
 
 // MarshalJSON marshals this into JSON
 func (e Error) MarshalJSON() ([]byte, error) {
 	type surrogate Error
-	data, err := json.Marshal(struct{
+	data, err := json.Marshal(struct {
 		Type string `json:"type"`
 		surrogate
 	}{

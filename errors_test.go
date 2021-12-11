@@ -183,7 +183,7 @@ func (suite *ErrorsSuite) TestFailsUnmarshallErrorWithWrongType() {
 	suite.Assert().Equal("blob", details.Value.(string))
 }
 
-func(suite *ErrorsSuite) TestCanFormatStackFrame() {
+func (suite *ErrorsSuite) TestCanFormatStackFrame() {
 	err := errors.NotImplemented.WithStack()
 	actual, ok := err.(errors.Error)
 	suite.Require().True(ok)
@@ -215,7 +215,7 @@ func (suite *ErrorsSuite) TestCanUseInvalidStackFrame() {
 	suite.Assert().Regexp(pattern, string(payload))
 }
 
-func(suite *ErrorsSuite) TestCanFormatStackTrace() {
+func (suite *ErrorsSuite) TestCanFormatStackTrace() {
 	err := errors.NotImplemented.WithStack()
 	actual, ok := err.(errors.Error)
 	suite.Require().True(ok)
@@ -315,29 +315,29 @@ func ExampleError_Format_withStack() {
 	simplifier := regexp.MustCompile(`\s*(.*/)?(.*):[0-9]+`)
 	for i := 0; i < len(lines); i++ {
 		line := lines[i]
-	  lines[i] = simplifier.ReplaceAllString(line, "  ${2}")
+		lines[i] = simplifier.ReplaceAllString(line, "  ${2}")
 	}
 	// we also do not care about last line that is machine dependent
 	fmt.Println(strings.Join(lines[0:len(lines)-1], "\n"))
 	// Output:
 	// Not Implemented
-  // github.com/gildas/go-errors_test.ExampleError_Format_withStack.func1
-  //   errors_test.go
-  // github.com/gildas/go-errors_test.CaptureStdout
-  //   errors_test.go
-  // github.com/gildas/go-errors_test.ExampleError_Format_withStack
-  //   errors_test.go
-  // testing.runExample
-  //   run_example.go
-  // testing.runExamples
-  //   example.go
-  // testing.(*M).Run
-  //   testing.go
-  // main.main
-  //   _testmain.go
-  // runtime.main
-  //   proc.go
-  // runtime.goexit
+	// github.com/gildas/go-errors_test.ExampleError_Format_withStack.func1
+	//   errors_test.go
+	// github.com/gildas/go-errors_test.CaptureStdout
+	//   errors_test.go
+	// github.com/gildas/go-errors_test.ExampleError_Format_withStack
+	//   errors_test.go
+	// testing.runExample
+	//   run_example.go
+	// testing.runExamples
+	//   example.go
+	// testing.(*M).Run
+	//   testing.go
+	// main.main
+	//   _testmain.go
+	// runtime.main
+	//   proc.go
+	// runtime.goexit
 }
 
 func ExampleError_Format_gosyntax() {

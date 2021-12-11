@@ -91,7 +91,7 @@ func (frame StackFrame) Format(s fmt.State, verb rune) {
 
 // MarshalJSON marshals this into JSON
 func (frame StackFrame) MarshalJSON() ([]byte, error) {
-	data, err := json.Marshal(struct{
+	data, err := json.Marshal(struct {
 		FuncName string `json:"func"`
 		FuncLine int    `json:"line"`
 		FuncPath string `json:"path"`
