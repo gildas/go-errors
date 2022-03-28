@@ -230,6 +230,12 @@ func (suite *ErrorsSuite) TestWrappers() {
 	err = errors.New("Hello World")
 	suite.Assert().NotNil(err)
 	suite.Assert().Equal("Hello World", fmt.Sprintf("%s", err))
+	if actual, ok := err.(errors.Error); ok {
+		suite.Assert().Equal(http.StatusInternalServerError, actual.Code)
+		suite.Assert().Equal("error.runtime", actual.ID)
+	} else {
+		suite.Assert().Fail("Error should be an errors.Error")
+	}
 
 	err = errors.Errorf("Hello World")
 	suite.Assert().NotNil(err)

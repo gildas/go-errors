@@ -32,6 +32,12 @@ type Error struct {
 // New also records the stack trace at the point it was called.
 func (e Error) New() error {
 	final := e
+	if final.Code == 0 {
+		final.Code = http.StatusInternalServerError
+	}
+	if len(final.ID) == 0 {
+		final.ID = "error.runtime"
+	}
 	final.Stack.Initialize()
 	return final
 }
