@@ -17,7 +17,7 @@ This is a library for handling errors in Go language.
 
 ## Usage
 
-This package combines Go 1.13's [errors package](https://golang.org/pkg/errors) and [github.com/pkg/errors](https://github.com/pkg/errors).
+This package combines Go standard [errors package](https://pkg.go.dev/errors) and [github.com/pkg/errors](https://github.com/pkg/errors).
 
 All funcs from both packages are available.
 
@@ -60,6 +60,8 @@ func main() {
 }
 ```
 
+Note: You should not use `var details errors.Error`, use the pointer version `var details *errors.Error` instead.
+
 When several `errors.Error` are chained up, this can be used to extract the ones you want:
 ```go
 func main() {
@@ -67,7 +69,8 @@ func main() {
     //...
     value, err := findme("key1")
     if errors.Is(err, errors.NotFound) {
-        if details, found := errors.NotFound.Extract(err); found {
+        details := errors.NotFound.Clone()
+        if errors.As(err, &details) {
             fmt.Fprintf(os.Stderr, "Could not find %s", details.What)
         }
     }
@@ -99,4 +102,20 @@ func main() {
     }
     // do something else
 }
+```
+
+You can also add more than one _cause_ to an `errors.Error`, turning it into a _multi-error_ container:
+
+```go
+err := errors.Error{}
+err.WithCause(errors.ArgumentInvalid.With("key", "value"))
+err.WithCause(errors.ArgumentMissing.With("key"))
+err.WithCause(fmt.Errorf("some simple string error"))
+```
+
+Finally, `errors.Error` supports JSON serialization:
+```go
+err := errors.InvalidType.With("bogus")
+payload, jerr := json.Marshal(err)
+// ...
 ```
