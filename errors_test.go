@@ -55,9 +55,32 @@ func (suite *ErrorsSuite) TestCanConvertToError() {
 	suite.Require().NotNil(err, "err should not be nil")
 
 	var details errors.Error
-	suite.Assert().True(errors.As(err, &details), "err should contain an errors.Error")
 	suite.Require().ErrorAs(err, &details, "err should contain an errors.Error")
 	suite.Assert().Equal("key", details.What)
+}
+
+func (suite *ErrorsSuite) TestCanConvertToSpecificError() {
+	err := errors.NotFound.With("key1").(errors.Error).Wrap(errors.ArgumentInvalid.With("key2"))
+	suite.Require().NotNil(err, "err should not be nil")
+
+	suite.Assert().ErrorIs(err, errors.Error{}, "err should be an errors.Error")
+	suite.Assert().ErrorIs(err, errors.NotFound, "err should match a NotFoundError")
+	suite.Assert().ErrorIs(err, errors.ArgumentInvalid, "err should match an ArgumentInvalidError")
+
+	details := errors.NotFound.Clone()
+	suite.Require().ErrorAs(err, &details, "err should contain an errors.NotFound")
+	suite.Assert().Equal("key1", details.What)
+	suite.Assert().Equal(errors.NotFound.ID, details.ID)
+	suite.Assert().Len(errors.ArgumentInvalid.What, 0, "ArgumentInvalid should not have changed")
+
+	details = errors.ArgumentInvalid.Clone()
+	suite.Require().ErrorAs(err, &details, "err should contain an errors.ArgumentInvalid")
+	suite.Assert().Equal("key2", details.What)
+	suite.Assert().Equal(errors.ArgumentInvalid.ID, details.ID)
+	suite.Assert().Len(errors.ArgumentInvalid.What, 0, "ArgumentInvalid should not have changed")
+
+	details = errors.ArgumentMissing.Clone()
+	suite.Require().False(errors.As(err, &details), "err should not contain an errors.ArgumentMissing")
 }
 
 func (suite *ErrorsSuite) TestCanWrap() {
@@ -85,26 +108,6 @@ func (suite *ErrorsSuite) TestCanUnwrap() {
 	err := errors.JSONUnmarshalError.Wrap(errors.New("Houston, we have a problem"))
 	unwrapped := errors.Unwrap(err)
 	suite.Assert().Equal("Houston, we have a problem", unwrapped.Error())
-}
-
-func (suite *ErrorsSuite) TestCanExtractError() {
-	err := errors.JSONUnmarshalError.Wrap(errors.Unsupported.With("genre", "funky"))
-	details, found := errors.Unsupported.Extract(err)
-
-	suite.Require().True(found, "Error does not contain an Unsupported Error")
-	suite.Require().Equal(errors.Unsupported.ID, details.ID)
-	suite.Assert().Equal("genre", details.What)
-	suite.Require().NotNil(details.Value, "Error Value should not be nil")
-	value, ok := details.Value.(string)
-	suite.Require().True(ok, "Value should be a string")
-	suite.Assert().Equal("funky", value)
-}
-
-func (suite *ErrorsSuite) TestFailsExtractErrorWithWrongSentinel() {
-	err := errors.JSONUnmarshalError.Wrap(errors.Unsupported.With("genre", "funky"))
-	_, found := errors.ArgumentInvalid.Extract(err)
-
-	suite.Require().False(found, "Error should not contain an ArgumentInvalid Error")
 }
 
 func (suite *ErrorsSuite) TestCanUnwrapJSONError() {
@@ -167,8 +170,8 @@ func (suite *ErrorsSuite) TestFailsUnmarshallErrorWithWrongType() {
 	suite.Require().NotNil(err)
 	suite.Assert().True(errors.Is(err, errors.JSONUnmarshalError), "Error should be a JSONUnmarshalError")
 	suite.Assert().True(errors.Is(err, errors.InvalidType), "Error should be an InvalidType")
-	details, found := errors.InvalidType.Extract(err)
-	suite.Require().True(found, "Error should be an errors.InvalidType")
+	details := errors.InvalidType.Clone()
+	suite.Require().ErrorAs(err, &details, "err should contain an errors.InvalidType")
 	suite.Assert().Equal("error", details.What)
 	suite.Assert().Equal("blob", details.Value.(string))
 }

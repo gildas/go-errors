@@ -42,6 +42,12 @@ func (e Error) New() error {
 	return final
 }
 
+// Clone creates an exact copy of this Error
+func (e Error) Clone() *Error {
+	final := e
+	return &final
+}
+
 // GetID tells the ID of this Error
 func (e Error) GetID() string {
 	return e.ID
@@ -65,18 +71,25 @@ func (e Error) Is(target error) bool {
 	return false
 }
 
-// Extract extracts an Error with the same ID as this Error from the error chain
-func (e Error) Extract(err error) (extracted Error, found bool) {
-	for err != nil {
-		if identifiable, ok := err.(interface{ GetID() string }); ok && identifiable.GetID() == e.GetID() {
-			extracted := Error{}
-			if As(err, &extracted) {
-				return extracted, true
-			}
-		}
-		err = Unwrap(err)
+// As attempts to convert the given error into the given target
+//
+// As returns true if the conversion was successful and the target is now populated.
+//
+// Example:
+//   target := errors.ArgumentInvalid.Clone()
+//   if errors.As(err, &target) {
+//     // do something with target
+//   }
+func (e Error) As(target interface{}) bool {
+	if target == nil {
+		return false
 	}
-	return Error{}, false
+	if actual, ok := target.(**Error); ok && (*actual).GetID() == e.ID {
+		copy := e
+		(*actual) = &copy
+		return true
+	}
+	return false
 }
 
 // Wrap wraps the given error in this Error.
