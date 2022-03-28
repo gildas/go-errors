@@ -28,7 +28,7 @@ func WithStack(err error) error {
 	if err == nil {
 		return nil
 	}
-	return Error{Code: http.StatusInternalServerError, ID: "error.runtime", Cause: err}.WithStack()
+	return Error{Code: http.StatusInternalServerError, ID: "error.runtime"}.Wrap(err)
 }
 
 // WithoutStack removes the stack trace from the current error
