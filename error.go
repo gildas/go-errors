@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -20,9 +22,9 @@ type Error struct {
 	What string `json:"what,omitempty"`
 	// Value contains the value that was wrong for errors that need it, like ArgumentInvalidError
 	// TODO: use structpb
-	Value interface{} `json:"value"`
+	Value interface{} `json:"value,omitempty"`
 	// Cause contains the error that caused this error (to wrap a json error in a JSONMarshalError, for example)
-	Cause error `json:"cause,omitempty"`
+	Cause error `json:"-"`
 	// stack contains the StackTrace when this Error is instanciated
 	Stack StackTrace `json:"-"`
 }
@@ -214,12 +216,21 @@ func (e Error) Format(state fmt.State, verb rune) {
 // MarshalJSON marshals this into JSON
 func (e Error) MarshalJSON() ([]byte, error) {
 	type surrogate Error
+	cause := e.Cause
+	if cause != nil && !Is(cause, Error{}) {
+		cause = Error{
+			Code: http.StatusInternalServerError,
+			ID:   fmt.Sprintf("error.runtime(%s)", reflect.TypeOf(cause).Elem().String()),
+			Text: e.Cause.Error()}
+	}
 	data, err := json.Marshal(struct {
 		Type string `json:"type"`
 		surrogate
+		Cause error `json:"cause,omitempty"`
 	}{
 		Type:      "error",
 		surrogate: surrogate(e),
+		Cause:     cause,
 	})
 	return data, JSONMarshalError.Wrap(err)
 }

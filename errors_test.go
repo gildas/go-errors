@@ -6,7 +6,9 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"reflect"
 	"regexp"
@@ -143,6 +145,105 @@ func (suite *ErrorsSuite) TestFailsWithNonErrorTarget() {
 func (suite *ErrorsSuite) TestCanMarshalError() {
 	expected := `{"type": "error", "id": "error.argument.invalid", "code": 400, "text": "Argument %s is invalid (value: %v)", "what": "key", "value": "value"}`
 	testerr := errors.ArgumentInvalid.With("key", "value")
+	payload, err := json.Marshal(testerr)
+	suite.Require().Nil(err)
+	suite.Assert().JSONEq(expected, string(payload))
+}
+
+func (suite *ErrorsSuite) TestCanMarshalError_WithoutValue() {
+	expected := `{"type": "error", "id": "error.argument.invalid", "code": 400, "text": "Argument %s is invalid (value: %v)", "what": "key"}`
+	testerr := errors.ArgumentInvalid.With("key")
+	payload, err := json.Marshal(testerr)
+	suite.Require().Nil(err)
+	suite.Assert().JSONEq(expected, string(payload))
+}
+
+func (suite *ErrorsSuite) TestCanMarshalError_WithCause() {
+	expected := `{
+		"type": "error",
+		"id": "error.argument.invalid",
+		"code": 400,
+		"text": "Argument %s is invalid (value: %v)",
+		"what": "key",
+		"value": "value",
+		"cause": {
+			"type": "error",
+			"code": 400,
+			"id": "error.http.request",
+			"text": "Bad Request. %s"
+		}
+	}`
+	var cause error = errors.FromHTTPStatusCode(400)
+	testerr := errors.ArgumentInvalid.With("key", "value").(errors.Error).Wrap(cause)
+	payload, err := json.Marshal(testerr)
+	suite.Require().Nil(err)
+	suite.Assert().JSONEq(expected, string(payload))
+}
+
+func (suite *ErrorsSuite) TestCanMarshalError_WithurlErrorCause01() {
+	expected := `{
+		"type": "error",
+		"id": "error.argument.invalid",
+		"code": 400,
+		"text": "Argument %s is invalid (value: %v)",
+		"what": "key",
+		"value": "value",
+		"cause": {
+			"type": "error",
+			"code": 500,
+			"id": "error.runtime(url.Error)",
+			"text": "Get \"https://example.com/\": remote error: tls handshake failure"
+		}
+	}`
+	var cause error = &url.Error{
+		Op:  "Get",
+		URL: "https://example.com/",
+		Err: &net.OpError{
+			Op:  "remote error",
+			Net: "",
+			Err: fmt.Errorf("tls handshake failure"),
+		},
+	}
+	testerr := errors.ArgumentInvalid.With("key", "value").(errors.Error).Wrap(cause)
+	payload, err := json.Marshal(testerr)
+	suite.Require().Nil(err)
+	suite.Assert().JSONEq(expected, string(payload))
+}
+
+func (suite *ErrorsSuite) TestCanMarshalError_WithurlErrorCause02() {
+	expected := `{
+		"type": "error",
+		"id": "error.argument.invalid",
+		"code": 400,
+		"text": "Argument %s is invalid (value: %v)",
+		"what": "key",
+		"value": "value",
+		"cause": {
+			"type": "error",
+			"code": 500,
+			"id": "error.runtime(url.Error)",
+			"text": "Get \"https://bogus.example.com/\": Dial tcp: lookup bogus.example.com on 208.67.222.222:53: no such host"
+		}
+	}`
+	var cause error = &url.Error{
+		Op:  "Get",
+		URL: "https://bogus.example.com/",
+		Err: &net.OpError{
+			Op:     "Dial",
+			Net:    "tcp",
+			Source: nil,
+			Addr:   nil,
+			Err: &net.DNSError{
+				Err:         "no such host",
+				Name:        "bogus.example.com",
+				Server:      "208.67.222.222:53",
+				IsTimeout:   false,
+				IsTemporary: false,
+				IsNotFound:  true,
+			},
+		},
+	}
+	testerr := errors.ArgumentInvalid.With("key", "value").(errors.Error).Wrap(cause)
 	payload, err := json.Marshal(testerr)
 	suite.Require().Nil(err)
 	suite.Assert().JSONEq(expected, string(payload))
