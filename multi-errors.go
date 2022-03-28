@@ -6,6 +6,8 @@ import (
 )
 
 // MultiError is used to collect errors, like during a loop
+//
+// Deprecated: use github.com/gildas/go-errors.Error with muitiple causes instead
 type MultiError struct {
 	Errors []error
 }
