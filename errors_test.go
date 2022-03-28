@@ -94,6 +94,14 @@ func (suite *ErrorsSuite) TestCanConvertToSpecificError() {
 	suite.Require().False(errors.As(err, &details), "err should not contain an errors.ArgumentMissing")
 }
 
+func (suite *ErrorsSuite) TestShouldFailConvertingToUrlError() {
+	// var err error = &url.Error{Op: "Get", URL: "https://bogus.acme.com", Err: fmt.Errorf("Houston, we have a problem")}
+	var err error = errors.NotFound.With("key")
+
+	var details *url.Error
+	suite.Assert().False(errors.As(err, &details), "err should not contain an url.Error")
+}
+
 func (suite *ErrorsSuite) TestCanWrap() {
 	wrapped := errors.NotImplemented.Wrap(errors.Errorf("Houston, we have a problem"))
 	suite.Require().NotNil(wrapped)
@@ -686,7 +694,14 @@ func (suite *ErrorsSuite) TestErrorWithCausesShouldBeAnError() {
 	testerr.WithCause(errors.ArgumentInvalid.With("key", "value"))
 	testerr.WithCause(errors.ArgumentMissing.With("key"))
 	suite.Assert().True(testerr.HasCauses(), "Error should have causes")
-	suite.Assert().Error(testerr.AsError(), "Error should have causes")
+	suite.Assert().Error(testerr.AsError(), "Error should convert to an error")
+}
+
+func (suite *ErrorsSuite) TestUnsetErrorShouldNotBeAnError() {
+	testerr := errors.Error{}
+	suite.Assert().Equal("runtime error", testerr.Error())
+	suite.Assert().False(testerr.HasCauses(), "Error should not have causes")
+	suite.Assert().NoError(testerr.AsError(), "Error should convert to nil")
 }
 
 func (suite *ErrorsSuite) TestCanCreateMultiError() {
