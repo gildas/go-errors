@@ -65,7 +65,7 @@ func (suite *ErrorsSuite) TestCanConvertToError() {
 	err := errors.NotFound.With("key")
 	suite.Require().NotNil(err, "err should not be nil")
 
-	var details errors.Error
+	var details *errors.Error
 	suite.Require().ErrorAs(err, &details, "err should contain an errors.Error")
 	suite.Assert().Equal("key", details.What)
 }

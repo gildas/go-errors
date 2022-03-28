@@ -67,12 +67,12 @@ func (e Error) Is(target error) bool {
 //     // do something with target
 //   }
 func (e Error) As(target interface{}) bool {
-	if target == nil {
-		return false
-	}
-	if actual, ok := target.(**Error); ok && (*actual).GetID() == e.ID {
+	if actual, ok := target.(**Error); ok {
+		if *actual != nil && (*actual).GetID() != e.ID {
+			return false
+		}
 		copy := e
-		(*actual) = &copy
+		*actual = &copy
 		return true
 	}
 	return false
