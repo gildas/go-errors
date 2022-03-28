@@ -600,9 +600,9 @@ func ExampleError_Format_withStack() {
 	// runtime.goexit
 }
 
-func ExampleError_Format_gosyntax() {
+func ExampleError_Format_gosyntax_01() {
 	output := CaptureStdout(func() {
-		err := errors.NotImplemented.WithStack()
+		err := errors.ArgumentInvalid.With("key", "value").(errors.Error).Wrap(errors.ArgumentMissing.With("key"))
 		if err != nil {
 			fmt.Printf("%#v\n", err)
 		}
@@ -610,10 +610,26 @@ func ExampleError_Format_gosyntax() {
 	// remove the line numbers from the stack trace as they change when the code is changed
 	simplifier := regexp.MustCompile(`\.go:[0-9]+`)
 	// we also do not care about the last file which is machine dependent
-	noasm := regexp.MustCompile(`, asm_.*.s:[0-9]+`)
+	noasm := regexp.MustCompile(`, asm_.[^\.]+.s:[0-9]+`)
 	fmt.Println(noasm.ReplaceAllString(simplifier.ReplaceAllString(output, ".go"), ""))
 	// Output:
-	// errors.Error{Code:501, ID:"error.notimplemented", Text:"Not Implemented", What:"", Value:<nil>, Cause:<nil>, Stack:[]errors.StackFrame{errors_test.go, errors_test.go, errors_test.go, run_example.go, example.go, testing.go, _testmain.go, proc.go}}
+	// errors.Error{Code: 400, ID: "error.argument.invalid", Text: "Argument %s is invalid (value: %v)", What: "key", Value: "value", Causes: []error{errors.Error{Code: 400, ID: "error.argument.missing", Text: "Argument %s is missing", What: "key", Stack: []errors.StackFrame{errors_test.go, errors_test.go, errors_test.go, run_example.go, example.go, testing.go, _testmain.go, proc.go}}, }, Stack: []errors.StackFrame{errors_test.go, errors_test.go, errors_test.go, run_example.go, example.go, testing.go, _testmain.go, proc.go}}
+}
+
+func ExampleError_Format_gosyntax_02() {
+	output := CaptureStdout(func() {
+		err := errors.ArgumentInvalid.With("key", "value").(errors.Error).Wrap(fmt.Errorf("unknown error"))
+		if err != nil {
+			fmt.Printf("%#v\n", err)
+		}
+	})
+	// remove the line numbers from the stack trace as they change when the code is changed
+	simplifier := regexp.MustCompile(`\.go:[0-9]+`)
+	// we also do not care about the last file which is machine dependent
+	noasm := regexp.MustCompile(`, asm_.[^\.]+.s:[0-9]+`)
+	fmt.Println(noasm.ReplaceAllString(simplifier.ReplaceAllString(output, ".go"), ""))
+	// Output:
+	// errors.Error{Code: 400, ID: "error.argument.invalid", Text: "Argument %s is invalid (value: %v)", What: "key", Value: "value", Causes: []error{"unknown error", }, Stack: []errors.StackFrame{errors_test.go, errors_test.go, errors_test.go, run_example.go, example.go, testing.go, _testmain.go, proc.go}}
 }
 
 func ExampleError_With() {

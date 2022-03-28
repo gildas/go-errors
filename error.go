@@ -200,8 +200,9 @@ func (e Error) GoString() string {
 				_, _ = sb.WriteString(gostringer.GoString())
 				_, _ = sb.WriteString(", ")
 			} else if cause != nil {
+				_, _ = sb.WriteString(`"`)
 				_, _ = sb.WriteString(cause.Error())
-				_, _ = sb.WriteString(", ")
+				_, _ = sb.WriteString(`", `)
 			}
 		}
 		_, _ = sb.WriteString("}")
