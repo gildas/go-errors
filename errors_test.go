@@ -36,6 +36,15 @@ func (suite *ErrorsSuite) TestCanCreate() {
 	suite.Require().NotNil(err, "newly created sentinel cannot be nil")
 }
 
+func (suite *ErrorsSuite) TestCanFormatStackTrace() {
+	err := errors.NotImplemented.WithStack()
+	actual, ok := err.(errors.Error)
+	suite.Require().True(ok)
+	suite.Require().NotEmpty(actual.Stack, "The stack should not be empty")
+	suite.Assert().Contains(fmt.Sprintf("%v", actual.Stack), "[errors_test.go:42 value.go")
+	suite.Assert().Contains(fmt.Sprintf("%s", actual.Stack), "[errors_test.go value.go")
+}
+
 func (suite *ErrorsSuite) TestCanTellIsError() {
 	err := errors.NotFound.With("key")
 	suite.Require().NotNil(err, "err should not be nil")
@@ -206,15 +215,6 @@ func (suite *ErrorsSuite) TestCanUseInvalidStackFrame() {
 	suite.Require().Nil(xmlerr)
 	pattern := regexp.MustCompile(`<StackFrame>unknown</StackFrame>`)
 	suite.Assert().Regexp(pattern, string(payload))
-}
-
-func (suite *ErrorsSuite) TestCanFormatStackTrace() {
-	err := errors.NotImplemented.WithStack()
-	actual, ok := err.(errors.Error)
-	suite.Require().True(ok)
-	suite.Require().NotEmpty(actual.Stack, "The stack should not be empty")
-	suite.Assert().Contains(fmt.Sprintf("%v", actual.Stack), "[errors_test.go:219 value.go")
-	suite.Assert().Contains(fmt.Sprintf("%s", actual.Stack), "[errors_test.go value.go")
 }
 
 func (suite *ErrorsSuite) TestWrappers() {
