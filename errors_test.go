@@ -36,38 +36,28 @@ func (suite *ErrorsSuite) TestCanCreate() {
 	suite.Require().NotNil(err, "newly created sentinel cannot be nil")
 }
 
-func (suite *ErrorsSuite) TestCanMatchError() {
-	err := errors.NotFound.With("key")
-	suite.Require().NotNil(err, "err should not be nil")
-
-	var details errors.Error
-	suite.Require().True(errors.As(err, &details), "err should contain an errors.Error")
-	suite.Assert().Equal("key", details.What)
-
-	err = errors.ArgumentMissing.With("key")
-	suite.Require().NotNil(err, "err should not be nil")
-	suite.Assert().True(errors.Is(err, errors.ArgumentMissing), "err should match a ArgumentMissingError (pointer)")
-	suite.Require().True(errors.As(err, &details), "err should contain an errors.Error")
-	suite.Assert().Equal("key", details.What)
-}
-
 func (suite *ErrorsSuite) TestCanTellIsError() {
 	err := errors.NotFound.With("key")
 	suite.Require().NotNil(err, "err should not be nil")
+	suite.Assert().ErrorIs(err, errors.Error{}, "err should be an errors.Error")
 	suite.Assert().True(errors.Is(err, errors.NotFound), "err should match a NotFoundError")
 	suite.Assert().True(errors.NotFound.Is(err), "err should match a NotFoundError")
 
 	err = fmt.Errorf("simple error")
 	suite.Require().NotNil(err, "err should not be nil")
+	suite.Assert().NotErrorIs(err, errors.Error{}, "err should not be an errors.Error")
 	suite.Assert().False(errors.Is(err, errors.NotFound), "err should not match an NotFoundError")
 	suite.Assert().False(errors.NotFound.Is(err), "err should not match an NotFoundError")
 }
 
-func (suite *ErrorsSuite) TestCanTellContainsAnError() {
+func (suite *ErrorsSuite) TestCanConvertToError() {
 	err := errors.NotFound.With("key")
 	suite.Require().NotNil(err, "err should not be nil")
+
 	var details errors.Error
 	suite.Assert().True(errors.As(err, &details), "err should contain an errors.Error")
+	suite.Require().ErrorAs(err, &details, "err should contain an errors.Error")
+	suite.Assert().Equal("key", details.What)
 }
 
 func (suite *ErrorsSuite) TestCanWrap() {

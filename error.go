@@ -50,8 +50,16 @@ func (e Error) GetID() string {
 // Is tells if this error matches the target.
 //
 // implements errors.Is interface (package "errors").
+//
+// To check if an error is an errors.Error, simply write:
+//  if errors.Is(err, errors.Error{}) {
+//    // do something with err
+//  }
 func (e Error) Is(target error) bool {
 	if actual, ok := target.(Error); ok {
+		if len(actual.ID) == 0 {
+			return true // no ID means any error is a match
+		}
 		return e.ID == actual.ID
 	}
 	return false
