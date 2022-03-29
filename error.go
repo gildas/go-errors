@@ -251,7 +251,10 @@ func (e Error) MarshalJSON() ([]byte, error) {
 			causes = append(causes, cause)
 		} else {
 			var id strings.Builder
-			causeType := reflect.TypeOf(cause).Elem()
+			causeType := reflect.TypeOf(cause)
+			if causeType.Kind() == reflect.Ptr {
+				causeType = causeType.Elem()
+			}
 			_, _ = id.WriteString("error.runtime")
 			if causeType.PkgPath() != "errors" || causeType.Name() != "errorString" {
 				_, _ = id.WriteString(".")
