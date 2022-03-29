@@ -260,12 +260,12 @@ func (e Error) MarshalJSON() ([]byte, error) {
 			causes = append(causes, Error{Code: http.StatusInternalServerError, ID: id.String(), Text: cause.Error()})
 		}
 	}
-	
+
 	if len(causes) == 1 {
 		payload = struct {
 			Type string `json:"type"`
 			surrogate
-			Cause  error   `json:"cause,omitempty"`
+			Cause error `json:"cause,omitempty"`
 		}{
 			Type:      "error",
 			surrogate: surrogate(e),
