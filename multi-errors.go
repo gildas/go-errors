@@ -13,6 +13,8 @@ type MultiError struct {
 }
 
 // Error returns the string version of this error
+//
+// Deprecated: use github.com/gildas/go-errors.Error with muitiple causes instead
 func (me *MultiError) Error() string {
 	// implements error interface
 	if len(me.Errors) == 0 {
@@ -29,6 +31,8 @@ func (me *MultiError) Error() string {
 // Append appends a new error
 //
 // If the error is nil, nothing is added
+//
+// Deprecated: use github.com/gildas/go-errors.Error with muitiple causes instead
 func (me *MultiError) Append(err error) *MultiError {
 	if err != nil {
 		me.Errors = append(me.Errors, err)
