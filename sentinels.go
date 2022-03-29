@@ -112,11 +112,17 @@ func FromHTTPStatusCode(code int) error {
 // ArgumentMissing is used when an argument is missing.
 var ArgumentMissing = NewSentinel(http.StatusBadRequest, "error.argument.missing", "Argument %s is missing")
 
+// ArgumentExpected is used when an argument is expected and another was set.
+var ArgumentExpected = NewSentinel(http.StatusBadRequest, "error.argument.expected", "Argument %s is invalid (value: %v, expected: %v)")
+
 // ArgumentInvalid is used when an argument has an unexpected value.
 var ArgumentInvalid = NewSentinel(http.StatusBadRequest, "error.argument.invalid", "Argument %s is invalid (value: %v)")
 
 // CreationFailed is used when something was not created properly.
 var CreationFailed = NewSentinel(http.StatusInternalServerError, "error.creation.failed", "Failed Creating %s")
+
+// Empty is used when something is empty whereas it should not.
+var Empty = NewSentinel(http.StatusBadRequest, "error.empty", "%s is empty")
 
 // EnvironmentMissing is used when an argument is missing.
 var EnvironmentMissing = NewSentinel(http.StatusBadRequest, "error.environment.missing", "Environment variable %s is missing")
@@ -126,6 +132,9 @@ var EnvironmentInvalid = NewSentinel(http.StatusBadRequest, "error.environment.i
 
 // DuplicateFound is used when something is found but it should not have been.
 var DuplicateFound = NewSentinel(http.StatusFound, "error.found", "%s %s Found")
+
+// Invalid is used when something is not valid.
+var Invalid = NewSentinel(http.StatusBadRequest, "error.invalid", "Invalid %s (value: %v, expected: %v)")
 
 // InvalidType is used when a type is not valid.
 var InvalidType = NewSentinel(http.StatusBadRequest, "error.type.invalid", "Invalid Type %s, expected: %s")
@@ -142,14 +151,23 @@ var JSONUnmarshalError = NewSentinel(http.StatusBadRequest, "error.json.unmarsha
 // JSONPropertyMissing is used when JSON data is missing a property.
 var JSONPropertyMissing = NewSentinel(http.StatusBadRequest, "error.json.property.missing", "JSON data is missing property %s")
 
+// Missing is used when something is missing.
+var Missing = NewSentinel(http.StatusBadRequest, "error.missing", "%s is missing")
+
 // NotConnected is used when some socket, client is not connected to its server.
 var NotConnected = NewSentinel(http.StatusGone, "error.client.not_connected", "%s Not Connected")
+
+// NotInitialized is used when something is not yet initialized.
+var NotInitialized = NewSentinel(http.StatusBadRequest, "error.notinitialized", "%s is not yet initialized")
 
 // NotFound is used when something is not found.
 var NotFound = NewSentinel(http.StatusNotFound, "error.notfound", "%s %s Not Found")
 
 // NotImplemented is used when some code/method/func is not written yet.
 var NotImplemented = NewSentinel(http.StatusNotImplemented, "error.notimplemented", "Not Implemented")
+
+// IndexOutOfBounds is used when an index is out of bounds.
+var IndexOutOfBounds = NewSentinel(http.StatusBadRequest, "error.index.outofbounds", "Index %s is out of bounds (value: %v)")
 
 // RuntimeError is used when the code failed executing something.
 var RuntimeError = NewSentinel(http.StatusInternalServerError, "error.runtime", "Runtime Error")
