@@ -3,13 +3,14 @@ package errors
 import (
 	goerrors "errors"
 	"fmt"
+	"net/http"
 )
 
 // New returns a new error with the supplied message.
 //
 // New also records the stack trace at the point it was called.
 func New(message string) error {
-	return Error{Text: message}.WithStack()
+	return Error{Code: http.StatusInternalServerError, ID: "error.runtime", Text: message}.WithStack()
 }
 
 // Errorf formats according to a format specifier and returns the string
@@ -17,7 +18,7 @@ func New(message string) error {
 //
 // Errorf also records the stack trace at the point it was called.
 func Errorf(format string, args ...interface{}) error {
-	return Error{Text: fmt.Sprintf(format, args...)}.WithStack()
+	return Error{Code: http.StatusInternalServerError, ID: "error.runtime", Text: fmt.Sprintf(format, args...)}.WithStack()
 }
 
 // WithStack annotates err with a stack trace at the point WithStack was called.
@@ -27,7 +28,7 @@ func WithStack(err error) error {
 	if err == nil {
 		return nil
 	}
-	return Error{Cause: err}.WithStack()
+	return Error{Code: http.StatusInternalServerError, ID: "error.runtime"}.Wrap(err)
 }
 
 // WithoutStack removes the stack trace from the current error
@@ -51,7 +52,7 @@ func Wrap(err error, message string) error {
 	if err == nil {
 		return nil
 	}
-	return Error{Text: message}.Wrap(err)
+	return Error{Code: http.StatusInternalServerError, ID: "error.runtime", Text: message}.Wrap(err)
 }
 
 // Wrapf returns an error annotating err with a stack trace
@@ -62,7 +63,7 @@ func Wrapf(err error, format string, args ...interface{}) error {
 	if err == nil {
 		return nil
 	}
-	return Error{Text: fmt.Sprintf(format, args...)}.Wrap(err)
+	return Error{Code: http.StatusInternalServerError, ID: "error.runtime", Text: fmt.Sprintf(format, args...)}.Wrap(err)
 }
 
 // WithMessage annotates err with a new message.
@@ -72,7 +73,7 @@ func WithMessage(err error, message string) error {
 	if err == nil {
 		return nil
 	}
-	return Error{Text: message}.Wrap(err)
+	return Error{Code: http.StatusInternalServerError, ID: "error.runtime", Text: message}.Wrap(err)
 }
 
 // WithMessagef annotates err with the format specifier.
@@ -82,7 +83,7 @@ func WithMessagef(err error, format string, args ...interface{}) error {
 	if err == nil {
 		return nil
 	}
-	return Error{Text: fmt.Sprintf(format, args...)}.Wrap(err)
+	return Error{Code: http.StatusInternalServerError, ID: "error.runtime", Text: fmt.Sprintf(format, args...)}.Wrap(err)
 }
 
 //***************** goerrors
