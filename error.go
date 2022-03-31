@@ -80,7 +80,11 @@ func (e Error) As(target interface{}) bool {
 
 // WithCause appends one or more errors as causes to this error
 func (e *Error) WithCause(err ...error) {
-	e.Causes = append(e.Causes, err...)
+	for _, cause := range err {
+		if cause != nil {
+			e.Causes = append(e.Causes, cause)
+		}
+	}
 }
 
 // HasCauses tells if this error has causes
@@ -91,7 +95,7 @@ func (e Error) HasCauses() bool {
 // AsError returns the error if any
 //
 // returns nil if e has no ID, no text, and has no cause
-func (e Error) AsError() error {
+func (e *Error) AsError() error {
 	if len(e.ID) == 0 && len(e.Text) == 0 && len(e.Causes) == 0 {
 		return nil
 	}
@@ -244,9 +248,6 @@ func (e Error) MarshalJSON() ([]byte, error) {
 	causes := make([]error, 0, len(e.Causes))
 
 	for _, cause := range e.Causes {
-		if cause == nil {
-			continue
-		}
 		if Is(cause, Error{}) {
 			causes = append(causes, cause)
 		} else {

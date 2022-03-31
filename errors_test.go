@@ -713,6 +713,14 @@ func (suite *ErrorsSuite) TestErrorWithCausesShouldBeAnError() {
 	suite.Assert().Error(testerr.AsError(), "Error should convert to an error")
 }
 
+func (suite *ErrorsSuite) TestErrorWithNilCausesShouldNotBeAnError() {
+	testerr := errors.Error{}
+	testerr.WithCause(nil)
+	testerr.WithCause(nil, nil, nil)
+	suite.Assert().False(testerr.HasCauses(), "Error should not have causes")
+	suite.Assert().NoError(testerr.AsError(), "Error should convert to a nil error")
+}
+
 func (suite *ErrorsSuite) TestUnsetErrorShouldNotBeAnError() {
 	testerr := errors.Error{}
 	suite.Assert().Equal("runtime error", testerr.Error())
