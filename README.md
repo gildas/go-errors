@@ -31,7 +31,7 @@ func findme(stuff map[string]string, key string) (string, error) {
     if value, found := stuff[key]; found {
         return value, nil
     }
-    return "", errors.NotFound.With(key)
+    return "", errors.NotFound.With("key", key)
 }
 
 func main() {
@@ -104,13 +104,24 @@ func main() {
 }
 ```
 
-You can also add more than one _cause_ to an `errors.Error`, turning it into a _multi-error_ container:
+You can chain multiple errors together (See [Example](https://pkg.go.dev/github.com/gildas/go-errors#example-WrapErrors)):
 
 ```go
-err := errors.Error{}
-err.WithCause(errors.ArgumentInvalid.With("key", "value"))
-err.WithCause(errors.ArgumentMissing.With("key"))
-err.WithCause(fmt.Errorf("some simple string error"))
+func doit() error {
+    // ... some processing
+    var urlError *url.Error // errors from the net/url package
+
+    return errors.WrapErrors(err, errors.NotFound.With("key", "key1"), urlError)
+}
+```
+
+You can also use a `errors.MultiError` to collect multiple errors together (See [Example](https://pkg.go.dev/github.com/gildas/go-errors#example-MultiError)):
+
+```go
+me := errors.MultiError{}
+me.Append(errors.NotFound.With("key", "key1"))
+me.Append(errors.NotFound.With("key", "key2"))
+fmt.Println(me.AsError())
 ```
 
 Finally, `errors.Error` supports JSON serialization:
