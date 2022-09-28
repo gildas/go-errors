@@ -30,7 +30,7 @@ func TestErrorsSuite(t *testing.T) {
 }
 
 func (suite *ErrorsSuite) SetupSuite() {
-	suite.Name = strings.TrimSuffix(reflect.TypeOf(*suite).Name(), "Suite")
+	suite.Name = strings.TrimSuffix(reflect.TypeOf(suite).Elem().Name(), "Suite")
 }
 
 func (suite *ErrorsSuite) TestCanCreate() {
