@@ -160,7 +160,7 @@ func (e Error) WithoutStack() error {
 func (e Error) Error() string {
 	var sb strings.Builder
 
-	switch strings.Count(e.Text, "%") {
+	switch strings.Count(e.Text, "%") - strings.Count(e.Text, "%%") {
 	case 0:
 		if len(e.Text) > 0 {
 			_, _ = sb.WriteString(e.Text)
