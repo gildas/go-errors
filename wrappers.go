@@ -28,6 +28,9 @@ func WithStack(err error) error {
 	if err == nil {
 		return nil
 	}
+	if err0, ok := err.(Error); ok {
+		return err0.WithStack()
+	}
 	return Error{Code: http.StatusInternalServerError, ID: "error.runtime"}.Wrap(err)
 }
 
