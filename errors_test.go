@@ -500,6 +500,10 @@ func (suite *ErrorsSuite) TestWrappers() {
 	suite.Assert().Equal("error.runtime\nCaused by:\n\tHello World", fmt.Sprintf("%s", err))
 	suite.Assert().Nil(errors.WithStack(nil))
 
+	err = errors.WithStack(errors.NotImplemented)
+	suite.Assert().NotNil(err)
+	suite.Assert().Equal("Not Implemented", fmt.Sprintf("%s", err))
+
 	err = errors.WithMessage(errors.NotFound.With("greetings", "hi"), "Hello World")
 	suite.Assert().NotNil(err)
 	suite.Assert().Equal("Hello World\nCaused by:\n\tgreetings hi Not Found", fmt.Sprintf("%s", err))
