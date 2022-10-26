@@ -74,7 +74,7 @@ func Wrapf(err error, format string, args ...interface{}) error {
 // If err is nil, WrapErrors returns nil.
 //
 // If no errors are given, WrapErrors returns err.
-func WrapErrors(err error, errors... error) error {
+func WrapErrors(err error, errors ...error) error {
 	if err == nil {
 		return nil
 	}

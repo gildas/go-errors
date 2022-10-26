@@ -254,7 +254,7 @@ func (e *Error) UnmarshalJSON(payload []byte) (err error) {
 	var inner struct {
 		Type string `json:"type"`
 		surrogate
-		Cause  *Error  `json:"cause,omitempty"`
+		Cause *Error `json:"cause,omitempty"`
 	}
 	if err = json.Unmarshal(payload, &inner); err != nil {
 		return JSONUnmarshalError.Wrap(err)
