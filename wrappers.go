@@ -28,6 +28,9 @@ func WithStack(err error) error {
 	if err == nil {
 		return nil
 	}
+	if err0, ok := err.(Error); ok {
+		return err0.WithStack()
+	}
 	return Error{Code: http.StatusInternalServerError, ID: "error.runtime"}.Wrap(err)
 }
 
@@ -64,6 +67,31 @@ func Wrapf(err error, format string, args ...interface{}) error {
 		return nil
 	}
 	return Error{Code: http.StatusInternalServerError, ID: "error.runtime", Text: fmt.Sprintf(format, args...)}.Wrap(err)
+}
+
+// WrapErrors returns an error wrapping given errors
+//
+// If err is nil, WrapErrors returns nil.
+//
+// If no errors are given, WrapErrors returns err.
+func WrapErrors(err error, errors ...error) error {
+	if err == nil {
+		return nil
+	}
+	if len(errors) == 0 {
+		return err
+	}
+	container, ok := err.(Error)
+	if !ok {
+		container = Error{Code: http.StatusInternalServerError, ID: "error.runtime", Text: err.Error()}
+	}
+	if len(errors) == 1 {
+		if errors[0] != nil {
+			return container.Wrap(errors[0])
+		}
+		return container
+	}
+	return container.Wrap(WrapErrors(errors[0], errors[1:]...))
 }
 
 // WithMessage annotates err with a new message.

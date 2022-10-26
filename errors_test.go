@@ -30,7 +30,7 @@ func TestErrorsSuite(t *testing.T) {
 }
 
 func (suite *ErrorsSuite) SetupSuite() {
-	suite.Name = strings.TrimSuffix(reflect.TypeOf(*suite).Name(), "Suite")
+	suite.Name = strings.TrimSuffix(reflect.TypeOf(suite).Elem().Name(), "Suite")
 }
 
 func (suite *ErrorsSuite) TestCanCreate() {
@@ -110,6 +110,162 @@ func (suite *ErrorsSuite) TestCanWrap() {
 	suite.Require().Nil(wrapped, "Wrapped error of nil should be nil")
 }
 
+func (suite *ErrorsSuite) TestCanWrapNilError() {
+	wrapped := errors.WrapErrors(nil)
+	suite.Require().Nil(wrapped, "Chained error of nil should be nil")
+}
+
+func (suite *ErrorsSuite) TestCanWrapOneError() {
+	error1 := errors.ArgumentMissing.With("key1")
+	wrapped := errors.WrapErrors(error1)
+	suite.Assert().Equal(error1, wrapped, "Chained errors of one error should be the error")
+}
+
+func (suite *ErrorsSuite) TestCanWrapTwoErrors() {
+	error1 := errors.ArgumentMissing.With("key1")
+	error2 := errors.NotFound.With("key", "key2")
+
+	wrapped := errors.WrapErrors(error1, error2)
+	suite.Assert().ErrorIs(wrapped, errors.Error{}, "Chained errors should contain an errors.Error")
+	suite.Assert().ErrorIs(wrapped, errors.ArgumentMissing, "Chained errors should match an ArgumentMissingError")
+	suite.Assert().ErrorIs(wrapped, errors.NotFound, "Chained errors should match a NotFoundError")
+
+	first, ok := wrapped.(errors.Error)
+	suite.Require().True(ok, "The first error should be an errors.Error")
+	suite.Assert().Equal(errors.ArgumentMissing.ID, first.ID, "The first error should be error1")
+	suite.Require().NotNil(first.Cause, "The first error should have a cause")
+
+	unwrapped := first.Unwrap()
+	suite.Require().NotNil(unwrapped, "The first error should have a cause")
+
+	second, ok := unwrapped.(errors.Error)
+	suite.Require().True(ok, "The second error should be an errors.Error")
+	suite.Assert().Equal(errors.NotFound.ID, second.ID, "The second error should be error2")
+	suite.Assert().Nil(second.Cause, "The second error should not have a cause")
+
+	unwrapped = second.Unwrap()
+	suite.Require().Nil(unwrapped, "The second error should have a cause")
+}
+
+func (suite *ErrorsSuite) TestCanWrapTwoErrorsAndNil() {
+	error1 := errors.ArgumentMissing.With("key1")
+	error2 := errors.NotFound.With("key", "key2")
+
+	wrapped := errors.WrapErrors(error1, error2, nil)
+	suite.Assert().ErrorIs(wrapped, errors.Error{}, "Chained errors should contain an errors.Error")
+	suite.Assert().ErrorIs(wrapped, errors.ArgumentMissing, "Chained errors should match an ArgumentMissingError")
+	suite.Assert().ErrorIs(wrapped, errors.NotFound, "Chained errors should match a NotFoundError")
+
+	first, ok := wrapped.(errors.Error)
+	suite.Require().True(ok, "The first error should be an errors.Error")
+	suite.Assert().Equal(errors.ArgumentMissing.ID, first.ID, "The first error should be error1")
+	suite.Require().NotNil(first.Cause, "The first error should have a cause")
+
+	unwrapped := first.Unwrap()
+	suite.Require().NotNil(unwrapped, "The first error should have a cause")
+
+	second, ok := unwrapped.(errors.Error)
+	suite.Require().True(ok, "The second error should be an errors.Error")
+	suite.Assert().Equal(errors.NotFound.ID, second.ID, "The second error should be error2")
+	suite.Require().Nil(second.Cause, "The second error should not have a cause")
+}
+
+func (suite *ErrorsSuite) TestCanWrapThreeErrors() {
+	error1 := errors.ArgumentMissing.With("key1")
+	error2 := errors.NotFound.With("key", "key2")
+	error3 := errors.EnvironmentMissing.With("key3")
+
+	wrapped := errors.WrapErrors(error1, error2, error3)
+	suite.Assert().ErrorIs(wrapped, errors.Error{}, "Chained errors should contain an errors.Error")
+	suite.Assert().ErrorIs(wrapped, errors.ArgumentMissing, "Chained errors should match an ArgumentMissingError")
+	suite.Assert().ErrorIs(wrapped, errors.NotFound, "Chained errors should match a NotFoundError")
+	suite.Assert().ErrorIs(wrapped, errors.EnvironmentMissing, "Chained errors should match a EnvironmentMissingError")
+
+	first, ok := wrapped.(errors.Error)
+	suite.Require().True(ok, "The first error should be an errors.Error")
+	suite.Assert().Equal(errors.ArgumentMissing.ID, first.ID, "The first error should be error1")
+	suite.Require().NotNil(first.Cause, "The first error should have a cause")
+
+	unwrapped := first.Unwrap()
+	suite.Require().NotNil(unwrapped, "The first error should have a cause")
+
+	second, ok := unwrapped.(errors.Error)
+	suite.Require().True(ok, "The second error should be an errors.Error")
+	suite.Assert().Equal(errors.NotFound.ID, second.ID, "The second error should be error2")
+	suite.Assert().NotNil(second.Cause, "The second error should have a cause")
+
+	unwrapped = second.Unwrap()
+	suite.Require().NotNil(unwrapped, "The second error should have a cause")
+
+	third, ok := unwrapped.(errors.Error)
+	suite.Require().True(ok, "The third error should be an errors.Error")
+	suite.Assert().Equal(errors.EnvironmentMissing.ID, third.ID, "The third error should be error3")
+	suite.Assert().Nil(third.Cause, "The third error should not have a cause")
+
+	unwrapped = third.Unwrap()
+	suite.Require().Nil(unwrapped, "The third error should have a cause")
+}
+
+func (suite *ErrorsSuite) TestCanWrapWithBasicErrors() {
+	error1 := errors.ArgumentMissing.With("key1")
+
+	wrapped := errors.WrapErrors(fmt.Errorf("basic error"), error1)
+	suite.Assert().ErrorIs(wrapped, errors.Error{}, "Chained errors should contain an errors.Error")
+	suite.Assert().ErrorIs(wrapped, errors.ArgumentMissing, "Chained errors should match an ArgumentMissingError")
+
+	first, ok := wrapped.(errors.Error)
+	suite.Require().True(ok, "The first error should be an errors.Error")
+	suite.Assert().Equal(http.StatusInternalServerError, first.Code, "The first error should have a 500 code")
+	suite.Assert().Equal("error.runtime", first.ID, "The first error should have a runtime error id")
+	suite.Assert().Equal("basic error", first.Text, "The first error should have the basic error as its Text")
+	suite.Require().NotNil(first.Cause, "The first error should have a cause")
+
+	unwrapped := first.Unwrap()
+	suite.Require().NotNil(unwrapped, "The first error should have a cause")
+
+	second, ok := unwrapped.(errors.Error)
+	suite.Require().True(ok, "The second error should be an errors.Error")
+	suite.Assert().Equal(errors.ArgumentMissing.ID, second.ID, "The second error should be error1")
+	suite.Require().Nil(second.Cause, "The second error should not have a cause")
+}
+
+func (suite *ErrorsSuite) TestCanWrapWithURLErrors() {
+	error1 := errors.ArgumentMissing.With("key1")
+	urlError := &url.Error{
+		Op:  "Get",
+		URL: "https://example.com/",
+		Err: &net.OpError{
+			Op:  "remote error",
+			Net: "",
+			Err: fmt.Errorf("tls handshake failure"),
+		},
+	}
+
+	wrapped := errors.WrapErrors(error1, urlError)
+	suite.Assert().ErrorIs(wrapped, errors.Error{}, "Chained errors should contain an errors.Error")
+	suite.Assert().ErrorIs(wrapped, errors.ArgumentMissing, "Chained errors should match an ArgumentMissingError")
+	suite.Assert().ErrorIs(wrapped, urlError, "Chained errors should match an url.Error")
+
+	first, ok := wrapped.(errors.Error)
+	suite.Require().True(ok, "The first error should be an errors.Error")
+	suite.Assert().Equal(errors.ArgumentMissing.ID, first.ID, "The first error should be error1")
+	suite.Require().NotNil(first.Cause, "The first error should have a cause")
+
+	unwrapped := first.Unwrap()
+	suite.Require().NotNil(unwrapped, "The first error should have a cause")
+
+	second, ok := unwrapped.(*url.Error)
+	suite.Require().True(ok, "The second error should be an *url.Error")
+	suite.Assert().Equal("Get", second.Op, "The second error should be a GET operation")
+
+	unwrapped = second.Unwrap()
+	suite.Require().NotNil(unwrapped, "The first error should have a cause")
+
+	third, ok := unwrapped.(*net.OpError)
+	suite.Require().True(ok, "The second error should be an *net.OpError")
+	suite.Assert().Equal("remote error", third.Op, "The second error should be a remote error")
+}
+
 func (suite *ErrorsSuite) TestCanRemoveStackTrace() {
 	suite.Assert().Nil(errors.WithoutStack(nil))
 
@@ -158,7 +314,7 @@ func (suite *ErrorsSuite) TestCanMarshalError() {
 	suite.Assert().JSONEq(expected, string(payload))
 }
 
-func (suite *ErrorsSuite) TestCanMarshalError_WithoutValue() {
+func (suite *ErrorsSuite) TestCanMarshalErrorWithoutValue() {
 	expected := `{"type": "error", "id": "error.argument.invalid", "code": 400, "text": "Argument %s is invalid (value: %v)", "what": "key"}`
 	testerr := errors.ArgumentInvalid.With("key")
 	payload, err := json.Marshal(testerr)
@@ -166,7 +322,7 @@ func (suite *ErrorsSuite) TestCanMarshalError_WithoutValue() {
 	suite.Assert().JSONEq(expected, string(payload))
 }
 
-func (suite *ErrorsSuite) TestCanMarshalError_WithCause() {
+func (suite *ErrorsSuite) TestCanMarshalErrorWithCause() {
 	expected := `{
 		"type": "error",
 		"id": "error.argument.invalid",
@@ -182,13 +338,13 @@ func (suite *ErrorsSuite) TestCanMarshalError_WithCause() {
 		}
 	}`
 	var cause error = errors.FromHTTPStatusCode(400)
-	testerr := errors.ArgumentInvalid.With("key", "value").(errors.Error).Wrap(cause)
+	testerr := errors.WrapErrors(errors.ArgumentInvalid.With("key", "value"), cause)
 	payload, err := json.Marshal(testerr)
 	suite.Require().Nil(err)
 	suite.Assert().JSONEq(expected, string(payload))
 }
 
-func (suite *ErrorsSuite) TestCanMarshalError_WithurlErrorCause01() {
+func (suite *ErrorsSuite) TestCanMarshalErrorWithURLErrorCause01() {
 	expected := `{
 		"type": "error",
 		"id": "error.argument.invalid",
@@ -212,13 +368,13 @@ func (suite *ErrorsSuite) TestCanMarshalError_WithurlErrorCause01() {
 			Err: fmt.Errorf("tls handshake failure"),
 		},
 	}
-	testerr := errors.ArgumentInvalid.With("key", "value").(errors.Error).Wrap(cause)
+	testerr := errors.WrapErrors(errors.ArgumentInvalid.With("key", "value"), cause)
 	payload, err := json.Marshal(testerr)
 	suite.Require().Nil(err)
 	suite.Assert().JSONEq(expected, string(payload))
 }
 
-func (suite *ErrorsSuite) TestCanMarshalError_WithurlErrorCause02() {
+func (suite *ErrorsSuite) TestCanMarshalErrorWithURLErrorCause02() {
 	expected := `{
 		"type": "error",
 		"id": "error.argument.invalid",
@@ -251,44 +407,40 @@ func (suite *ErrorsSuite) TestCanMarshalError_WithurlErrorCause02() {
 			},
 		},
 	}
-	testerr := errors.ArgumentInvalid.With("key", "value").(errors.Error).Wrap(cause)
+	testerr := errors.WrapErrors(errors.ArgumentInvalid.With("key", "value"), cause)
 	payload, err := json.Marshal(testerr)
 	suite.Require().Nil(err)
 	suite.Assert().JSONEq(expected, string(payload))
 }
 
-func (suite *ErrorsSuite) TestCanMarshalError_WithManyCauses() {
+func (suite *ErrorsSuite) TestCanMarshalErrorWithManyCauses() {
 	expected := `{
 		"type": "error",
-		"causes": [
-			{
-				"type": "error",
-				"id": "error.argument.invalid",
-				"code": 400,
-				"text": "Argument %s is invalid (value: %v)",
-				"what": "key",
-				"value": "value"
-			},
-			{
-				"type": "error",
-				"id": "error.argument.missing",
-				"code": 400,
-				"text": "Argument %s is missing",
-				"what": "key"
-			},
-			{
+		"id": "error.argument.invalid",
+		"code": 400,
+		"text": "Argument %s is invalid (value: %v)",
+		"what": "key",
+		"value": "value",
+		"cause": {
+			"type": "error",
+			"id": "error.argument.missing",
+			"code": 400,
+			"text": "Argument %s is missing",
+			"what": "key",
+			"cause": {
 				"type": "error",
 				"id": "error.runtime",
 				"code": 500,
 				"text": "some obscure error"
 			}
-		]
+		}
 	}`
-	testerr := errors.Error{}
-	testerr.WithCause(errors.ArgumentInvalid.With("key", "value"))
-	testerr.WithCause(errors.ArgumentMissing.With("key"))
-	testerr.WithCause(fmt.Errorf("some obscure error"))
-	testerr.WithCause(nil)
+	testerr := errors.WrapErrors(
+		errors.ArgumentInvalid.With("key", "value"),
+		errors.ArgumentMissing.With("key"),
+		fmt.Errorf("some obscure error"),
+		nil,
+	)
 	payload, err := json.Marshal(testerr)
 	suite.Require().Nil(err)
 	suite.Assert().JSONEq(expected, string(payload))
@@ -309,7 +461,7 @@ func (suite *ErrorsSuite) TestCanUnmarshalError() {
 	suite.Assert().Equal("error.argument.invalid", testerr.ID)
 }
 
-func (suite *ErrorsSuite) TestCanUnmarshalError_WithErrorCause() {
+func (suite *ErrorsSuite) TestCanUnmarshalErrorWithErrorCause() {
 	payload := `{
 		"type": "error",
 		"id": "error.argument.invalid",
@@ -330,16 +482,15 @@ func (suite *ErrorsSuite) TestCanUnmarshalError_WithErrorCause() {
 	suite.Assert().Equal(400, testerr.Code)
 	suite.Assert().Equal("error.argument.invalid", testerr.ID)
 	suite.Assert().Equal("Argument %s is invalid (value: %v)", testerr.Text)
-	suite.Require().True(testerr.HasCauses(), "error should have causes")
-	suite.Require().Equal(1, len(testerr.Causes), "error should have 1 cause")
+	suite.Require().NotNil(testerr.Cause, "error should have a cause")
 	var cause *errors.Error
-	suite.Require().ErrorAs(testerr.Causes[0], &cause, "causes[0] should be an errors.Error")
+	suite.Require().ErrorAs(testerr.Cause, &cause, "cause should be an errors.Error")
 	suite.Assert().Equal("error.http.request", cause.ID)
 	suite.Assert().Equal(400, cause.Code)
 	suite.Assert().Equal("Bad Request. %s", cause.Text)
 }
 
-func (suite *ErrorsSuite) TestCanUnmarshalError_WithTextCause() {
+func (suite *ErrorsSuite) TestCanUnmarshalErrorWithTextCause() {
 	payload := `{
 		"type": "error",
 		"id": "error.argument.invalid",
@@ -360,50 +511,44 @@ func (suite *ErrorsSuite) TestCanUnmarshalError_WithTextCause() {
 	suite.Assert().Equal(400, testerr.Code)
 	suite.Assert().Equal("error.argument.invalid", testerr.ID)
 	suite.Assert().Equal("Argument %s is invalid (value: %v)", testerr.Text)
-	suite.Require().True(testerr.HasCauses(), "error should have causes")
-	suite.Require().Equal(1, len(testerr.Causes), "error should have 1 cause")
+	suite.Require().NotNil(testerr.Cause, "error should have a cause")
 	var cause *errors.Error
-	suite.Require().ErrorAs(testerr.Causes[0], &cause, "causes[0] should be an errors.Error")
+	suite.Require().ErrorAs(testerr.Cause, &cause, "causes[0] should be an errors.Error")
 	suite.Assert().Equal("error.runtime.url.Error", cause.ID)
 	suite.Assert().Equal(500, cause.Code)
 	suite.Assert().Equal(`Get "https://bogus.example.com/": Dial tcp: lookup bogus.example.com on 208.67.222.222:53: no such host`, cause.Text)
 }
 
-func (suite *ErrorsSuite) TestCanUnmarshalError_WithManyCauses() {
+func (suite *ErrorsSuite) TestCanUnmarshalErrorWithManyCauses() {
 	payload := `{
 		"type": "error",
-		"causes": [
-			{
-				"type": "error",
-				"id": "error.argument.invalid",
-				"code": 400,
-				"text": "Argument %s is invalid (value: %v)",
-				"what": "key",
-				"value": "value"
-			},
-			{
-				"type": "error",
-				"id": "error.argument.missing",
-				"code": 400,
-				"text": "Argument %s is missing",
-				"what": "key"
-			},
-			{
+		"id": "error.argument.invalid",
+		"code": 400,
+		"text": "Argument %s is invalid (value: %v)",
+		"what": "key",
+		"value": "value",
+		"cause": {
+			"type": "error",
+			"id": "error.argument.missing",
+			"code": 400,
+			"text": "Argument %s is missing",
+			"what": "key",
+			"cause": {
 				"type": "error",
 				"id": "error.runtime",
 				"code": 500,
 				"text": "some obscure error"
 			}
-		]
+		}
 	}`
 	testerr := errors.Error{}
 	err := json.Unmarshal([]byte(payload), &testerr)
 	suite.Require().Nil(err)
-	suite.Require().True(testerr.HasCauses(), "error should have causes")
-	suite.Require().Equal(3, len(testerr.Causes), "error should have 3 causes")
+	suite.Require().NotNil(testerr.Cause, "error should have a cause")
 
+	// Unwrap the causes with the standard errors.As()/errors.Unwrap() functions
 	cause0 := errors.ArgumentInvalid.Clone()
-	suite.Require().ErrorAs(testerr.Causes[0], &cause0, "causes[0] should be an errors.Error")
+	suite.Require().ErrorAs(testerr, &cause0, "cause0 should be an errors.Error")
 	suite.Assert().Equal("error.argument.invalid", cause0.ID)
 	suite.Assert().Equal(400, cause0.Code)
 	suite.Assert().Equal("Argument %s is invalid (value: %v)", cause0.Text)
@@ -411,17 +556,29 @@ func (suite *ErrorsSuite) TestCanUnmarshalError_WithManyCauses() {
 	suite.Assert().Equal("value", cause0.Value)
 
 	cause1 := errors.ArgumentMissing.Clone()
-	suite.Require().ErrorAs(testerr.Causes[1], &cause1, "causes[1] should be an errors.Error")
+	suite.Require().ErrorAs(testerr, &cause1, "causes1 should be an errors.Error")
 	suite.Assert().Equal("error.argument.missing", cause1.ID)
 	suite.Assert().Equal(400, cause1.Code)
 	suite.Assert().Equal("Argument %s is missing", cause1.Text)
 	suite.Assert().Equal("key", cause1.What)
 
-	var cause2 *errors.Error
-	suite.Require().ErrorAs(testerr.Causes[2], &cause2, "causes[2] should be an errors.Error")
+	cause2 := errors.RuntimeError.Clone()
+	suite.Require().ErrorAs(testerr, &cause2, "causes2 should be an errors.Error")
 	suite.Assert().Equal("error.runtime", cause2.ID)
 	suite.Assert().Equal(500, cause2.Code)
 	suite.Assert().Equal("some obscure error", cause2.Text)
+
+	// Now let's verify the chain of causes
+	suite.Assert().Equal(errors.ArgumentInvalid.ID, testerr.ID, "the main errir should be an ArgumentInvalid")
+
+	c1, ok := testerr.Cause.(errors.Error)
+	suite.Require().True(ok, "the first cause should be an errors.Error")
+	suite.Assert().Equal(errors.ArgumentMissing.ID, c1.ID, "the first cause should be an ArgumentMissing")
+
+	c2, ok := c1.Cause.(errors.Error)
+	suite.Require().True(ok, "the second cause should be an errors.Error")
+	suite.Assert().Equal(errors.RuntimeError.ID, c2.ID, "the second cause should be a Runtime")
+	suite.Assert().Equal("some obscure error", c2.Text)
 }
 
 func (suite *ErrorsSuite) TestFailsUnmarshallErrorWithWrongPayload() {
@@ -499,6 +656,10 @@ func (suite *ErrorsSuite) TestWrappers() {
 	suite.Assert().NotNil(err)
 	suite.Assert().Equal("error.runtime\nCaused by:\n\tHello World", fmt.Sprintf("%s", err))
 	suite.Assert().Nil(errors.WithStack(nil))
+
+	err = errors.WithStack(errors.NotImplemented)
+	suite.Assert().NotNil(err)
+	suite.Assert().Equal("Not Implemented", fmt.Sprintf("%s", err))
 
 	err = errors.WithMessage(errors.NotFound.With("greetings", "hi"), "Hello World")
 	suite.Assert().NotNil(err)
@@ -602,7 +763,7 @@ func ExampleError_Format_withStack() {
 
 func ExampleError_Format_gosyntax_01() {
 	output := CaptureStdout(func() {
-		err := errors.ArgumentInvalid.With("key", "value").(errors.Error).Wrap(errors.ArgumentMissing.With("key"))
+		err := errors.WrapErrors(errors.ArgumentInvalid.With("key", "value"), errors.ArgumentMissing.With("key"))
 		if err != nil {
 			fmt.Printf("%#v\n", err)
 		}
@@ -613,12 +774,12 @@ func ExampleError_Format_gosyntax_01() {
 	noasm := regexp.MustCompile(`, asm_.[^\.]+.s:[0-9]+`)
 	fmt.Println(noasm.ReplaceAllString(simplifier.ReplaceAllString(output, ".go"), ""))
 	// Output:
-	// errors.Error{Code: 400, ID: "error.argument.invalid", Text: "Argument %s is invalid (value: %v)", What: "key", Value: "value", Causes: []error{errors.Error{Code: 400, ID: "error.argument.missing", Text: "Argument %s is missing", What: "key", Stack: []errors.StackFrame{errors_test.go, errors_test.go, errors_test.go, run_example.go, example.go, testing.go, _testmain.go, proc.go}}, }, Stack: []errors.StackFrame{errors_test.go, errors_test.go, errors_test.go, run_example.go, example.go, testing.go, _testmain.go, proc.go}}
+	// errors.Error{Code: 400, ID: "error.argument.invalid", Text: "Argument %s is invalid (value: %v)", What: "key", Value: "value", Cause: errors.Error{Code: 400, ID: "error.argument.missing", Text: "Argument %s is missing", What: "key", Stack: []errors.StackFrame{errors_test.go, errors_test.go, errors_test.go, run_example.go, example.go, testing.go, _testmain.go, proc.go}}, Stack: []errors.StackFrame{wrappers.go, errors_test.go, errors_test.go, errors_test.go, run_example.go, example.go, testing.go, _testmain.go, proc.go}}
 }
 
 func ExampleError_Format_gosyntax_02() {
 	output := CaptureStdout(func() {
-		err := errors.ArgumentInvalid.With("key", "value").(errors.Error).Wrap(fmt.Errorf("unknown error"))
+		err := errors.WrapErrors(errors.ArgumentInvalid.With("key", "value"), fmt.Errorf("unknown error"))
 		if err != nil {
 			fmt.Printf("%#v\n", err)
 		}
@@ -629,7 +790,7 @@ func ExampleError_Format_gosyntax_02() {
 	noasm := regexp.MustCompile(`, asm_.[^\.]+.s:[0-9]+`)
 	fmt.Println(noasm.ReplaceAllString(simplifier.ReplaceAllString(output, ".go"), ""))
 	// Output:
-	// errors.Error{Code: 400, ID: "error.argument.invalid", Text: "Argument %s is invalid (value: %v)", What: "key", Value: "value", Causes: []error{"unknown error", }, Stack: []errors.StackFrame{errors_test.go, errors_test.go, errors_test.go, run_example.go, example.go, testing.go, _testmain.go, proc.go}}
+	// errors.Error{Code: 400, ID: "error.argument.invalid", Text: "Argument %s is invalid (value: %v)", What: "key", Value: "value", Cause: "unknown error", Stack: []errors.StackFrame{wrappers.go, errors_test.go, errors_test.go, errors_test.go, run_example.go, example.go, testing.go, _testmain.go, proc.go}}
 }
 
 func ExampleError_With() {
@@ -705,27 +866,23 @@ func ExampleError_Wrap() {
 	// unexpected end of JSON input
 }
 
-func (suite *ErrorsSuite) TestErrorWithCausesShouldBeAnError() {
-	testerr := errors.Error{}
-	testerr.WithCause(errors.ArgumentInvalid.With("key", "value"))
-	testerr.WithCause(errors.ArgumentMissing.With("key"))
-	suite.Assert().True(testerr.HasCauses(), "Error should have causes")
-	suite.Assert().Error(testerr.AsError(), "Error should convert to an error")
-}
-
-func (suite *ErrorsSuite) TestErrorWithNilCausesShouldNotBeAnError() {
-	testerr := errors.Error{}
-	testerr.WithCause(nil)
-	testerr.WithCause(nil, nil, nil)
-	suite.Assert().False(testerr.HasCauses(), "Error should not have causes")
-	suite.Assert().NoError(testerr.AsError(), "Error should convert to a nil error")
-}
-
-func (suite *ErrorsSuite) TestUnsetErrorShouldNotBeAnError() {
-	testerr := errors.Error{}
-	suite.Assert().Equal("runtime error", testerr.Error())
-	suite.Assert().False(testerr.HasCauses(), "Error should not have causes")
-	suite.Assert().NoError(testerr.AsError(), "Error should convert to nil")
+func ExampleWrapErrors() {
+	err := errors.WrapErrors(
+		errors.ArgumentInvalid.With("key", "value"),
+		errors.ArgumentMissing.With("key"),
+		&url.Error{
+			Op:  "GET",
+			URL: "https://example.com",
+			Err: fmt.Errorf("connection refused"),
+		},
+	)
+	fmt.Println(err)
+	// Output:
+	// Argument key is invalid (value: value)
+	// Caused by:
+	// 	Argument key is missing
+	// Caused by:
+	// 	GET "https://example.com": connection refused
 }
 
 func (suite *ErrorsSuite) TestCanCreateMultiError() {

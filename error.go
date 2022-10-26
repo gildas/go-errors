@@ -22,8 +22,8 @@ type Error struct {
 	// Value contains the value that was wrong for errors that need it, like ArgumentInvalidError
 	// TODO: use structpb
 	Value interface{} `json:"value,omitempty"`
-	// Causes contains the error(s) that caused this error
-	Causes []error `json:"-"`
+	// Cause contains the error that caused this error
+	Cause error `json:"-"`
 	// stack contains the StackTrace when this Error is instanciated
 	Stack StackTrace `json:"-"`
 }
@@ -78,30 +78,6 @@ func (e Error) As(target interface{}) bool {
 	return false
 }
 
-// WithCause appends one or more errors as causes to this error
-func (e *Error) WithCause(err ...error) {
-	for _, cause := range err {
-		if cause != nil {
-			e.Causes = append(e.Causes, cause)
-		}
-	}
-}
-
-// HasCauses tells if this error has causes
-func (e Error) HasCauses() bool {
-	return len(e.Causes) > 0
-}
-
-// AsError returns the error if any
-//
-// returns nil if e has no ID, no text, and has no cause
-func (e *Error) AsError() error {
-	if len(e.ID) == 0 && len(e.Text) == 0 && len(e.Causes) == 0 {
-		return nil
-	}
-	return e
-}
-
 // Wrap wraps the given error in this Error.
 //
 // If err is nil, Wrap returns nil.
@@ -112,7 +88,7 @@ func (e Error) Wrap(err error) error {
 		return nil
 	}
 	final := e
-	final.Causes = append(final.Causes, err)
+	final.Cause = err
 	final.Stack.Initialize()
 	return final
 }
@@ -121,10 +97,10 @@ func (e Error) Wrap(err error) error {
 //
 // implements errors.Unwrap interface (package "errors").
 func (e Error) Unwrap() error {
-	if len(e.Causes) == 0 {
+	if e.Cause == nil {
 		return nil
 	}
-	return e.Causes[0]
+	return e.Cause
 }
 
 // With creates a new Error from a given sentinel telling "what" is wrong and eventually their value.
@@ -160,7 +136,7 @@ func (e Error) WithoutStack() error {
 func (e Error) Error() string {
 	var sb strings.Builder
 
-	switch strings.Count(e.Text, "%") {
+	switch strings.Count(e.Text, "%") - strings.Count(e.Text, "%%") {
 	case 0:
 		if len(e.Text) > 0 {
 			_, _ = sb.WriteString(e.Text)
@@ -174,12 +150,10 @@ func (e Error) Error() string {
 	default:
 		_, _ = fmt.Fprintf(&sb, e.Text, e.What, e.Value)
 	}
-	if len(e.Causes) > 0 {
+	if e.Cause != nil {
 		_, _ = sb.WriteString("\nCaused by:")
-		for _, cause := range e.Causes {
-			_, _ = sb.WriteString("\n\t")
-			_, _ = sb.WriteString(cause.Error())
-		}
+		_, _ = sb.WriteString("\n\t")
+		_, _ = sb.WriteString(e.Cause.Error())
 	}
 	return sb.String()
 }
@@ -197,19 +171,15 @@ func (e Error) GoString() string {
 	if e.Value != nil {
 		_, _ = fmt.Fprintf(&sb, `, Value: %#v`, e.Value)
 	}
-	if len(e.Causes) > 0 {
-		_, _ = sb.WriteString(`, Causes: []error{`)
-		for _, cause := range e.Causes {
-			if gostringer, ok := cause.(fmt.GoStringer); ok {
-				_, _ = sb.WriteString(gostringer.GoString())
-				_, _ = sb.WriteString(", ")
-			} else if cause != nil {
-				_, _ = sb.WriteString(`"`)
-				_, _ = sb.WriteString(cause.Error())
-				_, _ = sb.WriteString(`", `)
-			}
+	if e.Cause != nil {
+		_, _ = sb.WriteString(", Cause: ")
+		if gostringer, ok := e.Cause.(fmt.GoStringer); ok {
+			_, _ = sb.WriteString(gostringer.GoString())
+		} else {
+			_, _ = sb.WriteString(`"`)
+			_, _ = sb.WriteString(e.Cause.Error())
+			_, _ = sb.WriteString(`"`)
 		}
-		_, _ = sb.WriteString("}")
 	}
 	if len(e.Stack) > 0 {
 		_, _ = fmt.Fprintf(&sb, `, Stack: %#v`, e.Stack)
@@ -245,14 +215,14 @@ func (e Error) Format(state fmt.State, verb rune) {
 func (e Error) MarshalJSON() ([]byte, error) {
 	type surrogate Error
 	var payload interface{}
-	causes := make([]error, 0, len(e.Causes))
+	var cause *Error
 
-	for _, cause := range e.Causes {
-		if Is(cause, Error{}) {
-			causes = append(causes, cause)
+	if e.Cause != nil {
+		if value, ok := e.Cause.(Error); ok {
+			cause = &value
 		} else {
 			var id strings.Builder
-			causeType := reflect.TypeOf(cause)
+			causeType := reflect.TypeOf(e.Cause)
 			if causeType.Kind() == reflect.Ptr {
 				causeType = causeType.Elem()
 			}
@@ -261,30 +231,18 @@ func (e Error) MarshalJSON() ([]byte, error) {
 				_, _ = id.WriteString(".")
 				_, _ = id.WriteString(causeType.String())
 			}
-			causes = append(causes, Error{Code: http.StatusInternalServerError, ID: id.String(), Text: cause.Error()})
+			cause = &Error{Code: http.StatusInternalServerError, ID: id.String(), Text: e.Cause.Error()}
 		}
 	}
 
-	if len(causes) == 1 {
-		payload = struct {
-			Type string `json:"type"`
-			surrogate
-			Cause error `json:"cause,omitempty"`
-		}{
-			Type:      "error",
-			surrogate: surrogate(e),
-			Cause:     causes[0],
-		}
-	} else {
-		payload = struct {
-			Type string `json:"type"`
-			surrogate
-			Causes []error `json:"causes,omitempty"`
-		}{
-			Type:      "error",
-			surrogate: surrogate(e),
-			Causes:    causes,
-		}
+	payload = struct {
+		Type string `json:"type"`
+		surrogate
+		Cause *Error `json:"cause,omitempty"`
+	}{
+		Type:      "error",
+		surrogate: surrogate(e),
+		Cause:     cause,
 	}
 	data, err := json.Marshal(payload)
 	return data, JSONMarshalError.Wrap(err)
@@ -296,8 +254,7 @@ func (e *Error) UnmarshalJSON(payload []byte) (err error) {
 	var inner struct {
 		Type string `json:"type"`
 		surrogate
-		Cause  *Error  `json:"cause,omitempty"`
-		Causes []Error `json:"causes,omitempty"`
+		Cause *Error `json:"cause,omitempty"`
 	}
 	if err = json.Unmarshal(payload, &inner); err != nil {
 		return JSONUnmarshalError.Wrap(err)
@@ -306,14 +263,8 @@ func (e *Error) UnmarshalJSON(payload []byte) (err error) {
 		return JSONUnmarshalError.Wrap(InvalidType.With("error", inner.Type))
 	}
 	*e = Error(inner.surrogate)
-	if len(inner.Causes) > 0 {
-		e.Causes = make([]error, len(inner.Causes))
-		for i, cause := range inner.Causes {
-			e.Causes[i] = cause
-		}
-	}
 	if inner.Cause != nil {
-		e.Causes = append(e.Causes, *inner.Cause)
+		e.Cause = *inner.Cause
 	}
 	return nil
 }
