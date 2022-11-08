@@ -121,56 +121,7 @@ func (suite *ErrorsSuite) TestCanWrapOneError() {
 	suite.Assert().Equal(error1, wrapped, "Chained errors of one error should be the error")
 }
 
-func (suite *ErrorsSuite) TestCanWrapTwoErrors() {
-	error1 := errors.ArgumentMissing.With("key1")
-	error2 := errors.NotFound.With("key", "key2")
-
-	wrapped := errors.WrapErrors(error1, error2)
-	suite.Assert().ErrorIs(wrapped, errors.Error{}, "Chained errors should contain an errors.Error")
-	suite.Assert().ErrorIs(wrapped, errors.ArgumentMissing, "Chained errors should match an ArgumentMissingError")
-	suite.Assert().ErrorIs(wrapped, errors.NotFound, "Chained errors should match a NotFoundError")
-
-	first, ok := wrapped.(errors.Error)
-	suite.Require().True(ok, "The first error should be an errors.Error")
-	suite.Assert().Equal(errors.ArgumentMissing.ID, first.ID, "The first error should be error1")
-	suite.Require().NotNil(first.Cause, "The first error should have a cause")
-
-	unwrapped := first.Unwrap()
-	suite.Require().NotNil(unwrapped, "The first error should have a cause")
-
-	second, ok := unwrapped.(errors.Error)
-	suite.Require().True(ok, "The second error should be an errors.Error")
-	suite.Assert().Equal(errors.NotFound.ID, second.ID, "The second error should be error2")
-	suite.Assert().Nil(second.Cause, "The second error should not have a cause")
-
-	unwrapped = second.Unwrap()
-	suite.Require().Nil(unwrapped, "The second error should have a cause")
-}
-
-func (suite *ErrorsSuite) TestCanWrapTwoErrorsAndNil() {
-	error1 := errors.ArgumentMissing.With("key1")
-	error2 := errors.NotFound.With("key", "key2")
-
-	wrapped := errors.WrapErrors(error1, error2, nil)
-	suite.Assert().ErrorIs(wrapped, errors.Error{}, "Chained errors should contain an errors.Error")
-	suite.Assert().ErrorIs(wrapped, errors.ArgumentMissing, "Chained errors should match an ArgumentMissingError")
-	suite.Assert().ErrorIs(wrapped, errors.NotFound, "Chained errors should match a NotFoundError")
-
-	first, ok := wrapped.(errors.Error)
-	suite.Require().True(ok, "The first error should be an errors.Error")
-	suite.Assert().Equal(errors.ArgumentMissing.ID, first.ID, "The first error should be error1")
-	suite.Require().NotNil(first.Cause, "The first error should have a cause")
-
-	unwrapped := first.Unwrap()
-	suite.Require().NotNil(unwrapped, "The first error should have a cause")
-
-	second, ok := unwrapped.(errors.Error)
-	suite.Require().True(ok, "The second error should be an errors.Error")
-	suite.Assert().Equal(errors.NotFound.ID, second.ID, "The second error should be error2")
-	suite.Require().Nil(second.Cause, "The second error should not have a cause")
-}
-
-func (suite *ErrorsSuite) TestCanWrapThreeErrors() {
+func (suite *ErrorsSuite) TestCanWrapErrors() {
 	error1 := errors.ArgumentMissing.With("key1")
 	error2 := errors.NotFound.With("key", "key2")
 	error3 := errors.EnvironmentMissing.With("key3")
