@@ -29,6 +29,7 @@ func (suite *MultiErrorSuite) TestCanCreate() {
 	errs := &errors.MultiError{}
 	suite.Require().NotNil(errs, "err should not be nil")
 	suite.Assert().Nil(errs.AsError(), "err should contain nothing")
+	suite.Assert().True(errs.IsEmpty(), "err should be contain nothing")
 	suite.Assert().Equal("", errs.Error())
 }
 

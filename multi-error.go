@@ -28,6 +28,11 @@ func (me *MultiError) Error() string {
 	return fmt.Sprintf("%d errors:%s", len(me.Errors), text.String())
 }
 
+// IsEmpty returns true if this MultiError contains no errors
+func (me *MultiError) IsEmpty() bool {
+	return me == nil || len(me.Errors) == 0
+}
+
 // Append appends new errors
 //
 // If an error is nil, it is not added
@@ -73,7 +78,9 @@ func (e MultiError) As(target interface{}) bool {
 
 // AsError returns this if it contains errors, nil otherwise
 //
-// If this contains only one error, that error is returned
+// If this contains only one error, that error is returned.
+//
+// AsError also records the stack trace at the point it was called.
 func (me *MultiError) AsError() error {
 	if me == nil || len(me.Errors) == 0 {
 		return nil
