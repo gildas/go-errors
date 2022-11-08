@@ -33,18 +33,23 @@ func (suite *ErrorsSuite) SetupSuite() {
 	suite.Name = strings.TrimSuffix(reflect.TypeOf(suite).Elem().Name(), "Suite")
 }
 
-func (suite *ErrorsSuite) TestCanCreate() {
-	err := errors.NewSentinel(32123, "error.test.create", "this is the error")
-	suite.Require().NotNil(err, "newly created sentinel cannot be nil")
-}
-
 func (suite *ErrorsSuite) TestCanFormatStackTrace() {
 	err := errors.NotImplemented.WithStack()
 	actual, ok := err.(errors.Error)
 	suite.Require().True(ok)
 	suite.Require().NotEmpty(actual.Stack, "The stack should not be empty")
-	suite.Assert().Contains(fmt.Sprintf("%v", actual.Stack), "[errors_test.go:42 value.go")
+	suite.Assert().Contains(fmt.Sprintf("%v", actual.Stack), "[errors_test.go:37 value.go")
 	suite.Assert().Contains(fmt.Sprintf("%s", actual.Stack), "[errors_test.go value.go")
+}
+
+func (suite *ErrorsSuite) TestCanCreate() {
+	err := errors.Error{}
+	suite.Assert().Equal("runtime error", err.Error())
+}
+
+func (suite *ErrorsSuite) TestCanCreateSentinel() {
+	err := errors.NewSentinel(32123, "error.test.create", "this is the error")
+	suite.Require().NotNil(err, "newly created sentinel cannot be nil")
 }
 
 func (suite *ErrorsSuite) TestCanTellIsError() {
