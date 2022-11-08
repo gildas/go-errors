@@ -28,6 +28,17 @@ func (me *MultiError) Error() string {
 	return fmt.Sprintf("%d errors:%s", len(me.Errors), text.String())
 }
 
+// Append appends new errors
+//
+// If an error is nil, it is not added
+func (me *MultiError) Append(errs ...error) {
+	for _, err := range errs {
+		if err != nil {
+			me.Errors = append(me.Errors, err)
+		}
+	}
+}
+
 	}
 }
 
