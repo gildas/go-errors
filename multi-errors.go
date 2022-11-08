@@ -17,6 +17,9 @@ func (me *MultiError) Error() string {
 	if len(me.Errors) == 0 {
 		return ""
 	}
+	if len(me.Errors) == 1 {
+		return me.Errors[0].Error()
+	}
 	text := strings.Builder{}
 	for _, err := range me.Errors {
 		text.WriteString(err.Error())
