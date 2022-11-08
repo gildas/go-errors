@@ -266,6 +266,20 @@ func (suite *ErrorsSuite) TestCanWrapWithURLErrors() {
 	suite.Assert().Equal("remote error", third.Op, "The second error should be a remote error")
 }
 
+func (suite *ErrorsSuite) TestShouldAddStackOnlyOnce() {
+	err := errors.NotImplemented
+	suite.Assert().Empty(err.Stack, "The error should not have a stack")
+
+	err1 := errors.WithStack(err)
+	suite.Assert().NotEmpty(err1, "The error should have a stack")
+	stack1 := err1.(errors.Error).Stack
+
+	err2 := errors.WithStack(err1)
+	suite.Assert().NotEmpty(err2, "The error should have a stack")
+	stack2 := err2.(errors.Error).Stack
+	suite.Assert().Equal(stack1, stack2, "The error should have the same stack")
+}
+
 func (suite *ErrorsSuite) TestCanRemoveStackTrace() {
 	suite.Assert().Nil(errors.WithoutStack(nil))
 

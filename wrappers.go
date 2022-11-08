@@ -24,12 +24,17 @@ func Errorf(format string, args ...interface{}) error {
 // WithStack annotates err with a stack trace at the point WithStack was called.
 //
 // If err is nil, WithStack returns nil.
+//
+// If err is already annotated with a stack trace, WithStack returns err.
 func WithStack(err error) error {
 	if err == nil {
 		return nil
 	}
-	if err0, ok := err.(Error); ok {
-		return err0.WithStack()
+	if _err, ok := err.(Error); ok {
+		if len(_err.Stack) == 0 {
+			return _err.WithStack()
+		}
+		return _err
 	}
 	return Error{Code: http.StatusInternalServerError, ID: "error.runtime"}.Wrap(err)
 }
