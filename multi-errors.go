@@ -22,10 +22,13 @@ func (me *MultiError) Error() string {
 	}
 	text := strings.Builder{}
 	for _, err := range me.Errors {
-		text.WriteString(err.Error())
 		text.WriteString("\n")
+		text.WriteString(err.Error())
 	}
-	return fmt.Sprintf("%d Errors:\n%s", len(me.Errors), text.String())
+	return fmt.Sprintf("%d errors:%s", len(me.Errors), text.String())
+}
+
+	}
 }
 
 // Append appends a new error
