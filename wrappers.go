@@ -76,27 +76,38 @@ func Wrapf(err error, format string, args ...interface{}) error {
 
 // WrapErrors returns an error wrapping given errors
 //
-// If err is nil, WrapErrors returns nil.
+// If the first or the last error in the chain is nil, WrapErrors returns nil.
 //
-// If no errors are given, WrapErrors returns err.
-func WrapErrors(err error, errors ...error) error {
-	if err == nil {
+// If there is only one error in the chain, WrapErrors returns it.
+func WrapErrors(errors ...error) error {
+	if len(errors) == 0 || errors[0] == nil || errors[len(errors)-1] == nil {
 		return nil
 	}
-	if len(errors) == 0 {
-		return err
-	}
-	container, ok := err.(Error)
-	if !ok {
-		container = Error{Code: http.StatusInternalServerError, ID: "error.runtime", Text: err.Error()}
-	}
 	if len(errors) == 1 {
-		if errors[0] != nil {
-			return container.Wrap(errors[0])
+		return WithStack(errors[0])
+	}
+
+	createContainer := func(err error) Error {
+		container, ok := err.(Error)
+		if !ok {
+			container = RuntimeError
+			container.Origin = err
+			container.Text = err.Error()
 		}
 		return container
 	}
-	return container.Wrap(WrapErrors(errors[0], errors[1:]...))
+
+	index := len(errors) - 1
+	container := errors[index] // last error is never nil here
+	for index--; index >= 0; index-- {
+		if errors[index] == nil {
+			continue
+		}
+		newContainer := createContainer(errors[index])
+		newContainer.Cause = container // the current container is copied here
+		container = newContainer
+	}
+	return container
 }
 
 // WithMessage annotates err with a new message.
