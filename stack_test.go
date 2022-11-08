@@ -15,8 +15,8 @@ func (suite *ErrorsSuite) TestCanFormatStackTrace() {
 	actual, ok := err.(errors.Error)
 	suite.Require().True(ok)
 	suite.Require().NotEmpty(actual.Stack, "The stack should not be empty")
-	suite.Assert().Contains(fmt.Sprintf("%v", actual.Stack), "[errors_test.go:14 value.go")
-	suite.Assert().Contains(fmt.Sprintf("%s", actual.Stack), "[errors_test.go value.go")
+	suite.Assert().Contains(fmt.Sprintf("%v", actual.Stack), "[stack_test.go:14 value.go")
+	suite.Assert().Contains(fmt.Sprintf("%s", actual.Stack), "[stack_test.go value.go")
 }
 
 func (suite *ErrorsSuite) TestCanFormatStackFrame() {
@@ -42,7 +42,7 @@ func (suite *ErrorsSuite) TestCanMarshalStackFrameAsText() {
 	frame := actual.Stack[0]
 	payload, xmlerr := xml.Marshal(frame)
 	suite.Require().Nil(xmlerr)
-	pattern := regexp.MustCompile(`<StackFrame>.*TestCanMarshalStackFrameAsText .*/errors_test.go:[0-9]+</StackFrame>`)
+	pattern := regexp.MustCompile(`<StackFrame>.*TestCanMarshalStackFrameAsText .*/stack_test.go:[0-9]+</StackFrame>`)
 	suite.Assert().Regexp(pattern, string(payload))
 }
 
