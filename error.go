@@ -89,7 +89,9 @@ func (e Error) Wrap(err error) error {
 	}
 	final := e
 	final.Cause = err
-	final.Stack.Initialize()
+	if len(final.Stack) == 0 {
+		final.Stack.Initialize()
+	}
 	return final
 }
 
