@@ -185,6 +185,7 @@ var Unsupported = NewSentinel(http.StatusMethodNotAllowed, "error.unsupported", 
 var UnknownError = NewSentinel(http.StatusInternalServerError, "error.unknown", "Unknown Error: %s")
 
 /*********** HTTP Errors ***************************************************************************************************************/
+
 // HTTPBadGateway is used when an http.Client request fails.
 var HTTPBadGateway = NewSentinel(http.StatusBadGateway, "error.http.gateway", http.StatusText(http.StatusBadGateway))
 

@@ -80,14 +80,14 @@ func (suite *ErrorsSuite) TestCanConvertToSpecificError() {
 
 	details := errors.NotFound.Clone()
 	suite.Require().ErrorAs(err, &details, "err should contain an errors.NotFound")
-	suite.Assert().Equal("key1", details.What)
 	suite.Assert().Equal(errors.NotFound.ID, details.ID)
+	suite.Assert().Equal("key1", details.What)
 	suite.Assert().Len(errors.ArgumentInvalid.What, 0, "ArgumentInvalid should not have changed")
 
 	details = errors.ArgumentInvalid.Clone()
 	suite.Require().ErrorAs(err, &details, "err should contain an errors.ArgumentInvalid")
-	suite.Assert().Equal("key2", details.What)
 	suite.Assert().Equal(errors.ArgumentInvalid.ID, details.ID)
+	suite.Assert().Equal("key2", details.What)
 	suite.Assert().Len(errors.ArgumentInvalid.What, 0, "ArgumentInvalid should not have changed")
 
 	details = errors.ArgumentMissing.Clone()
@@ -541,7 +541,8 @@ func (suite *ErrorsSuite) TestCanUnmarshalErrorWithManyCauses() {
 			}
 		}
 	}`
-	testerr := errors.Error{}
+	var testerr errors.Error
+
 	err := json.Unmarshal([]byte(payload), &testerr)
 	suite.Require().Nil(err)
 	suite.Require().NotNil(testerr.Cause, "error should have a cause")
@@ -600,7 +601,9 @@ func (suite *ErrorsSuite) TestFailsUnmarshallErrorWithWrongType() {
 	details := errors.InvalidType.Clone()
 	suite.Require().ErrorAs(err, &details, "err should contain an errors.InvalidType")
 	suite.Assert().Equal("error", details.What)
-	suite.Assert().Equal("blob", details.Value.(string))
+	value, ok := details.Value.(string)
+	suite.Require().True(ok, "details.Value should be a string")
+	suite.Assert().Equal("blob", value)
 }
 
 func (suite *ErrorsSuite) TestCanFormatStackFrame() {
@@ -686,20 +689,17 @@ func (suite *ErrorsSuite) TestWrappers() {
 
 	suite.Assert().True(errors.Is(err, errors.NotFound), "err should be of the same type as NotFoundError")
 
-	var inner errors.Error
+	var inner *errors.Error
 	suite.Assert().True(errors.As(err, &inner), "Inner Error should be an errors.Error")
 }
 
 func ExampleError() {
-	sentinel := errors.NewSentinel(500, "error.test.custom", "Test Error")
-	err := sentinel.Clone()
-	if err != nil {
-		fmt.Println(err)
+	err := errors.NewSentinel(500, "error.test.custom", "Test Error").Clone()
+	fmt.Println(err)
 
-		var details *errors.Error
-		if errors.As(err, &details) {
-			fmt.Println(details.ID)
-		}
+	var details *errors.Error
+	if errors.As(err, &details) {
+		fmt.Println(details.ID)
 	}
 	// Output:
 	// Test Error
@@ -798,7 +798,7 @@ func ExampleError_With() {
 	if err != nil {
 		fmt.Println(err)
 
-		var details errors.Error
+		var details *errors.Error
 		if errors.As(err, &details) {
 			fmt.Println(details.ID)
 		}
@@ -813,7 +813,7 @@ func ExampleError_With_value() {
 	if err != nil {
 		fmt.Println(err)
 
-		var details errors.Error
+		var details *errors.Error
 		if errors.As(err, &details) {
 			fmt.Println(details.ID)
 		}
@@ -828,7 +828,7 @@ func ExampleError_With_array() {
 	if err != nil {
 		fmt.Println(err)
 
-		var details errors.Error
+		var details *errors.Error
 		if errors.As(err, &details) {
 			fmt.Println(details.ID)
 		}
@@ -846,7 +846,7 @@ func ExampleError_Wrap() {
 	err := json.Unmarshal([]byte(`{"value": 0`), &payload)
 	if err != nil {
 		finalerr := errors.JSONMarshalError.Wrap(err)
-		var details errors.Error
+		var details *errors.Error
 		if errors.As(finalerr, &details) {
 			fmt.Println(details.ID)
 		}
