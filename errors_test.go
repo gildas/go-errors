@@ -111,7 +111,7 @@ func (suite *ErrorsSuite) TestCanWrap() {
 }
 
 func (suite *ErrorsSuite) TestCanWrapNilError() {
-	wrapped := errors.WrapErrors(nil)
+	wrapped := errors.WrapErrors(nil, errors.NotImplemented.WithStack())
 	suite.Require().Nil(wrapped, "Chained error of nil should be nil")
 }
 
