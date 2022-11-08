@@ -53,9 +53,20 @@ func (me *MultiError) Append(err error) *MultiError {
 }
 
 // AsError returns this if it contains errors, nil otherwise
+//
+// If this contains only one error, that error is returned
 func (me *MultiError) AsError() error {
 	if me == nil || len(me.Errors) == 0 {
 		return nil
+	}
+	if len(me.Errors) == 1 {
+		if err, ok := me.Errors[0].(*Error); ok {
+			if len(err.Stack) == 0 {
+				return err.WithStack()
+			}
+			return err
+		}
+		return WithStack(me.Errors[0])
 	}
 	return WithStack(me)
 }
