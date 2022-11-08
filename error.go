@@ -22,6 +22,8 @@ type Error struct {
 	// Value contains the value that was wrong for errors that need it, like ArgumentInvalidError
 	// TODO: use structpb
 	Value interface{} `json:"value,omitempty"`
+	// Origin contains the real error from another package, if any
+	Origin error `json:"-"`
 	// Cause contains the error that caused this error
 	Cause error `json:"-"`
 	// stack contains the StackTrace when this Error is instanciated
@@ -136,6 +138,9 @@ func (e Error) WithoutStack() error {
 //
 // implements error interface.
 func (e Error) Error() string {
+	if e.Origin != nil {
+		return e.Origin.Error()
+	}
 	var sb strings.Builder
 
 	switch strings.Count(e.Text, "%") - strings.Count(e.Text, "%%") {
