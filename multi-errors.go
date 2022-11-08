@@ -39,17 +39,36 @@ func (me *MultiError) Append(errs ...error) {
 	}
 }
 
+// Is tells if this error matches the target.
+//
+// implements errors.Is interface (package "errors").
+//
+// To check if an error is an errors.Error, simply write:
+//  if errors.Is(err, errors.Error{}) {
+//    // do something with err
+//  }
+func (e MultiError) Is(target error) bool {
+	if _, ok := target.(*MultiError); ok {
+		return true
 	}
+	for _, err := range e.Errors {
+		if Is(err, target) {
+			return true
+		}
+	}
+	return false
 }
 
-// Append appends a new error
+// As attempts to convert the given error into the given target
 //
-// If the error is nil, nothing is added
-func (me *MultiError) Append(err error) *MultiError {
-	if err != nil {
-		me.Errors = append(me.Errors, err)
+// The first error to match the target is returned
+func (e MultiError) As(target interface{}) bool {
+	for _, err := range e.Errors {
+		if As(err, target) {
+			return true
+		}
 	}
-	return me
+	return false
 }
 
 // AsError returns this if it contains errors, nil otherwise
