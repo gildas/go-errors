@@ -22,6 +22,8 @@ type Error struct {
 	// Value contains the value that was wrong for errors that need it, like ArgumentInvalidError
 	// TODO: use structpb
 	Value interface{} `json:"value,omitempty"`
+	// Origin contains the real error from another package, if any
+	Origin error `json:"-"`
 	// Cause contains the error that caused this error
 	Cause error `json:"-"`
 	// stack contains the StackTrace when this Error is instanciated
@@ -89,7 +91,9 @@ func (e Error) Wrap(err error) error {
 	}
 	final := e
 	final.Cause = err
-	final.Stack.Initialize()
+	if len(final.Stack) == 0 {
+		final.Stack.Initialize()
+	}
 	return final
 }
 
@@ -134,6 +138,14 @@ func (e Error) WithoutStack() error {
 //
 // implements error interface.
 func (e Error) Error() string {
+	// At some point this should be a pointer receiver
+	// https://github.com/jszwec/csvutil/issues/39
+	// But when it is, it breaks the errors.As() as it cannot find sentinel errors anymore:
+	// Line wrap.go:92 is always true so line wrap.go:96 is never reached and Error.As never called.
+	// https://cs.opensource.google/go/go/+/refs/tags/go1.19.3:src/errors/wrap.go;drc=2580d0e08d5e9f979b943758d3c49877fb2324cb;l=92
+	if e.Origin != nil {
+		return e.Origin.Error()
+	}
 	var sb strings.Builder
 
 	switch strings.Count(e.Text, "%") - strings.Count(e.Text, "%%") {
