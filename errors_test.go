@@ -100,16 +100,6 @@ func (suite *ErrorsSuite) TestCanWrap() {
 	suite.Require().Nil(wrapped, "Wrapped error of nil should be nil")
 }
 
-func (suite *ErrorsSuite) TestCanWrapNilError() {
-	wrapped := errors.WrapErrors(nil, errors.NotImplemented.WithStack())
-	suite.Require().Nil(wrapped, "Chained error of nil should be nil")
-}
-
-func (suite *ErrorsSuite) TestCanWrapErrorWithNilError() {
-	wrapped := errors.WrapErrors(errors.NotImplemented.WithStack(), nil)
-	suite.Require().Nil(wrapped, "Chained error of nil should be nil")
-}
-
 func (suite *ErrorsSuite) TestCanWrapOneError() {
 	error1 := errors.ArgumentMissing.With("key1")
 	wrapped := errors.WrapErrors(error1)
@@ -150,6 +140,11 @@ func (suite *ErrorsSuite) TestCanWrapErrors() {
 
 	unwrapped = third.Unwrap()
 	suite.Require().Nil(unwrapped, "The third error should not have a cause")
+}
+
+func (suite *ErrorsSuite) TestCanWrapErrorsStartingWithNilError() {
+	wrapped := errors.WrapErrors(nil, errors.NotImplemented.WithStack())
+	suite.Require().Nil(wrapped, "Chained error of nil should be nil")
 }
 
 func (suite *ErrorsSuite) TestCanWrapErrorsEndingWithNilError() {
@@ -252,6 +247,155 @@ func (suite *ErrorsSuite) TestCanWrapWithURLErrors() {
 	third, ok := unwrapped.(*net.OpError)
 	suite.Require().True(ok, "The second error should be an *net.OpError")
 	suite.Assert().Equal("remote error", third.Op, "The second error should be a remote error")
+}
+
+func (suite *ErrorsSuite) TestCanJoinOneError() {
+	error1 := errors.ArgumentMissing.With("key1")
+	joined := errors.Join(error1)
+	suite.Assert().Equal(error1, joined, "Joined errors of one error should be the error")
+}
+
+func (suite *ErrorsSuite) TestCanJoin() {
+	error1 := errors.ArgumentMissing.With("key1")
+	error2 := errors.NotFound.With("key", "key2")
+	error3 := errors.EnvironmentMissing.With("key3")
+
+	joined := errors.Join(error1, error2, error3)
+	suite.Assert().ErrorIs(joined, errors.Error{}, "Joined errors should contain an errors.Error")
+	suite.Assert().ErrorIs(joined, errors.ArgumentMissing, "Joined errors should match an ArgumentMissingError")
+	suite.Assert().ErrorIs(joined, errors.NotFound, "Joined errors should match a NotFoundError")
+	suite.Assert().ErrorIs(joined, errors.EnvironmentMissing, "Joined errors should match a EnvironmentMissingError")
+
+	first, ok := joined.(errors.Error)
+	suite.Require().True(ok, "The first error should be an errors.Error")
+	suite.Assert().Equal(errors.ArgumentMissing.ID, first.ID, "The first error should be error1")
+	suite.Require().NotNil(first.Cause, "The first error should have a cause")
+
+	unwrapped := first.Unwrap()
+	suite.Require().NotNil(unwrapped, "The first error should have a cause")
+
+	second, ok := unwrapped.(errors.Error)
+	suite.Require().True(ok, "The second error should be an errors.Error")
+	suite.Assert().Equal(errors.NotFound.ID, second.ID, "The second error should be error2")
+	suite.Assert().NotNil(second.Cause, "The second error should have a cause")
+
+	unwrapped = second.Unwrap()
+	suite.Require().NotNil(unwrapped, "The second error should have a cause")
+
+	third, ok := unwrapped.(errors.Error)
+	suite.Require().True(ok, "The third error should be an errors.Error")
+	suite.Assert().Equal(errors.EnvironmentMissing.ID, third.ID, "The third error should be error3")
+	suite.Assert().Nil(third.Cause, "The third error should not have a cause")
+
+	unwrapped = third.Unwrap()
+	suite.Require().Nil(unwrapped, "The third error should not have a cause")
+}
+
+func (suite *ErrorsSuite) TestCanJoinWithBasicErrors() {
+	error1 := errors.ArgumentMissing.With("key1")
+
+	joined := errors.Join(fmt.Errorf("basic error"), error1)
+	suite.Assert().ErrorIs(joined, errors.Error{}, "Joined errors should contain an errors.Error")
+	suite.Assert().ErrorIs(joined, errors.ArgumentMissing, "Joined errors should match an ArgumentMissingError")
+
+	first, ok := joined.(errors.Error)
+	suite.Require().True(ok, "The first error should be an errors.Error")
+	suite.Assert().Equal(http.StatusInternalServerError, first.Code, "The first error should have a 500 code")
+	suite.Assert().Equal("error.runtime", first.ID, "The first error should have a runtime error id")
+	suite.Assert().Equal("basic error", first.Text, "The first error should have the basic error as its Text")
+	suite.Assert().Equal("basic error", first.Error())
+	suite.Require().NotNil(first.Cause, "The first error should have a cause")
+
+	unwrapped := first.Unwrap()
+	suite.Require().NotNil(unwrapped, "The first error should have a cause")
+
+	second, ok := unwrapped.(errors.Error)
+	suite.Require().True(ok, "The second error should be an errors.Error")
+	suite.Assert().Equal(errors.ArgumentMissing.ID, second.ID, "The second error should be error1")
+	suite.Require().Nil(second.Cause, "The second error should not have a cause")
+}
+
+func (suite *ErrorsSuite) TestCanJoinWithURLErrors() {
+	error1 := errors.ArgumentMissing.With("key1")
+	urlError := &url.Error{
+		Op:  "Get",
+		URL: "https://example.com/",
+		Err: &net.OpError{
+			Op:  "remote error",
+			Net: "",
+			Err: fmt.Errorf("tls handshake failure"),
+		},
+	}
+
+	joined := errors.Join(error1, urlError)
+	suite.Assert().ErrorIs(joined, errors.Error{}, "Joined errors should contain an errors.Error")
+	suite.Assert().ErrorIs(joined, errors.ArgumentMissing, "Joined errors should match an ArgumentMissing")
+	suite.Assert().ErrorIs(joined, urlError, "Joined errors should match an url.Error")
+
+	first, ok := joined.(errors.Error)
+	suite.Require().True(ok, "The first error should be an errors.Error")
+	suite.Assert().Equal(errors.ArgumentMissing.ID, first.ID, "The first error should be error1")
+	suite.Require().NotNil(first.Cause, "The first error should have a cause")
+
+	unwrapped := first.Unwrap()
+	suite.Require().NotNil(unwrapped, "The first error should have a cause")
+
+	second, ok := unwrapped.(*url.Error)
+	suite.Require().True(ok, "The second error should be an *url.Error")
+	suite.Assert().Equal("Get", second.Op, "The second error should be a GET operation")
+
+	unwrapped = second.Unwrap()
+	suite.Require().NotNil(unwrapped, "The first error should have a cause")
+
+	third, ok := unwrapped.(*net.OpError)
+	suite.Require().True(ok, "The second error should be an *net.OpError")
+	suite.Assert().Equal("remote error", third.Op, "The second error should be a remote error")
+}
+
+func (suite *ErrorsSuite) TestCanJoinStartingWithNilError() {
+	joined := errors.Join(nil, errors.NotImplemented.WithStack())
+	suite.Require().Nil(joined, "Joined error of nil should be nil")
+}
+
+func (suite *ErrorsSuite) TestCanJoinEndingWithNilError() {
+	joined := errors.Join(errors.ArgumentMissing.With("key1"), errors.ArgumentMissing.With("key2"), errors.NotImplemented.WithStack(), nil)
+	suite.Require().Nil(joined, "Joined error ending with nil should be nil")
+}
+
+func (suite *ErrorsSuite) TestCanJoinWithNilError() {
+	error1 := errors.ArgumentMissing.With("key1")
+	error2 := errors.NotFound.With("key", "key2")
+	error3 := errors.EnvironmentMissing.With("key3")
+
+	joined := errors.Join(error1, error2, nil, error3)
+	suite.Assert().ErrorIs(joined, errors.Error{}, "Joined errors should contain an errors.Error")
+	suite.Assert().ErrorIs(joined, errors.ArgumentMissing, "Joined errors should match an ArgumentMissingError")
+	suite.Assert().ErrorIs(joined, errors.NotFound, "Joined errors should match a NotFoundError")
+	suite.Assert().ErrorIs(joined, errors.EnvironmentMissing, "Joined errors should match a EnvironmentMissingError")
+
+	first, ok := joined.(errors.Error)
+	suite.Require().True(ok, "The first error should be an errors.Error")
+	suite.Assert().Equal(errors.ArgumentMissing.ID, first.ID, "The first error should be error1")
+	suite.Require().NotNil(first.Cause, "The first error should have a cause")
+
+	unwrapped := first.Unwrap()
+	suite.Require().NotNil(unwrapped, "The first error should have a cause")
+
+	second, ok := unwrapped.(errors.Error)
+	suite.Require().True(ok, "The second error should be an errors.Error")
+	suite.Assert().Equal(errors.NotFound.ID, second.ID, "The second error should be error2")
+	suite.Assert().NotNil(second.Cause, "The second error should have a cause")
+
+	unwrapped = second.Unwrap()
+	suite.Require().NotNil(unwrapped, "The second error should have a cause")
+
+	third, ok := unwrapped.(errors.Error)
+	suite.Require().True(ok, "The third error should be an errors.Error")
+	suite.Assert().Equal(errors.EnvironmentMissing.ID, third.ID, "The third error should be error3")
+	suite.Assert().Nil(third.Cause, "The third error should not have a cause")
+
+	unwrapped = third.Unwrap()
+	suite.Require().Nil(unwrapped, "The third error should not have a cause")
 }
 
 func (suite *ErrorsSuite) TestShouldAddStackOnlyOnce() {
@@ -777,6 +921,25 @@ func ExampleError_Wrap() {
 
 func ExampleWrapErrors() {
 	err := errors.WrapErrors(
+		errors.ArgumentInvalid.With("key", "value"),
+		errors.ArgumentMissing.With("key"),
+		&url.Error{
+			Op:  "GET",
+			URL: "https://example.com",
+			Err: fmt.Errorf("connection refused"),
+		},
+	)
+	fmt.Println(err)
+	// Output:
+	// Argument key is invalid (value: value)
+	// Caused by:
+	// 	Argument key is missing
+	// Caused by:
+	// 	GET "https://example.com": connection refused
+}
+
+func ExampleJoin() {
+	err := errors.Join(
 		errors.ArgumentInvalid.With("key", "value"),
 		errors.ArgumentMissing.With("key"),
 		&url.Error{
