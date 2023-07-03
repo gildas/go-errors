@@ -4,4 +4,4 @@ package errors
 var commit string
 
 // VERSION is the version of this application
-var VERSION = "0.3.4" + commit
+var VERSION = "0.3.5" + commit

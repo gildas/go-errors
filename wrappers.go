@@ -78,8 +78,48 @@ func Wrapf(err error, format string, args ...interface{}) error {
 //
 // If the first or the last error in the chain is nil, WrapErrors returns nil.
 //
+// If one of the errors in the middle of the chain is nil, that error is ignored.
+//
 // If there is only one error in the chain, WrapErrors returns it.
 func WrapErrors(errors ...error) error {
+	if len(errors) == 0 || errors[0] == nil || errors[len(errors)-1] == nil {
+		return nil
+	}
+	if len(errors) == 1 {
+		return WithStack(errors[0])
+	}
+
+	createContainer := func(err error) Error {
+		container, ok := err.(Error)
+		if !ok {
+			container = RuntimeError
+			container.Origin = err
+			container.Text = err.Error()
+		}
+		return container
+	}
+
+	index := len(errors) - 1
+	container := errors[index] // last error is never nil here
+	for index--; index >= 0; index-- {
+		if errors[index] == nil {
+			continue
+		}
+		newContainer := createContainer(errors[index])
+		newContainer.Cause = container // the current container is copied here
+		container = newContainer
+	}
+	return container
+}
+
+// Join returns an error wrapping given errors
+//
+// If the first or the last error in the chain is nil, Join returns nil.
+//
+// If one of the errors in the middle of the chain is nil, that error is ignored.
+//
+// If there is only one error in the chain, Join returns it.
+func Join(errors ...error) error {
 	if len(errors) == 0 || errors[0] == nil || errors[len(errors)-1] == nil {
 		return nil
 	}
