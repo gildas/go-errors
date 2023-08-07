@@ -63,8 +63,8 @@ func (e Error) Is(target error) bool {
 		}
 		return e.ID == actual.ID
 	}
-	if e.Origin != nil && Is(e.Origin, target) {
-		return true
+	if e.Origin != nil {
+		return Is(e.Origin, target)
 	}
 	return false
 }
@@ -87,6 +87,9 @@ func (e Error) As(target interface{}) bool {
 		copy := e
 		*actual = &copy
 		return true
+	}
+	if e.Origin != nil {
+		return As(e.Origin, target)
 	}
 	return false
 }
