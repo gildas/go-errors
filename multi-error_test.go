@@ -24,7 +24,6 @@ func (suite *MultiErrorSuite) SetupSuite() {
 	suite.Name = strings.TrimSuffix(reflect.TypeOf(suite).Elem().Name(), "Suite")
 }
 
-
 func (suite *MultiErrorSuite) TestCanCreate() {
 	errs := &errors.MultiError{}
 	suite.Require().NotNil(errs, "err should not be nil")

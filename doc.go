@@ -26,7 +26,6 @@ Here is how to use the errors:
 	    }
 	}
 
-
 If you plan to do something with the content of the error, you would try that:
 
 	func main() {
@@ -95,6 +94,5 @@ Finally, errors.Error supports JSON serialization.
 	err := errors.InvalidType.With("bogus")
 	payload, jerr := json.Marshal(err)
 	// ...
-
 */
 package errors

@@ -9,7 +9,6 @@ import (
 	"github.com/gildas/go-errors"
 )
 
-
 func (suite *ErrorsSuite) TestCanFormatStackTrace() {
 	err := errors.NotImplemented.WithStack()
 	actual, ok := err.(errors.Error)

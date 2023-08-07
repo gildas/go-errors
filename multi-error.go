@@ -49,9 +49,10 @@ func (me *MultiError) Append(errs ...error) {
 // implements errors.Is interface (package "errors").
 //
 // To check if an error is an errors.Error, simply write:
-//  if errors.Is(err, errors.Error{}) {
-//    // do something with err
-//  }
+//
+//	if errors.Is(err, errors.Error{}) {
+//	  // do something with err
+//	}
 func (e MultiError) Is(target error) bool {
 	if _, ok := target.(*MultiError); ok {
 		return true

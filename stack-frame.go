@@ -57,16 +57,16 @@ func (frame StackFrame) MarshalText() ([]byte, error) {
 
 // Format formats the frame according to the fmt.Formatter interface.
 //
-//    %s    source file
-//    %d    source line
-//    %n    function name
-//    %v    equivalent to %s:%d
+//	%s    source file
+//	%d    source line
+//	%n    function name
+//	%v    equivalent to %s:%d
 //
 // Format accepts flags that alter the printing of some verbs, as follows:
 //
-//    %+s   function name and path of source file relative to the compile time
-//          GOPATH separated by \n\t (<funcname>\n\t<path>)
-//    %+v   equivalent to %+s:%d
+//	%+s   function name and path of source file relative to the compile time
+//	      GOPATH separated by \n\t (<funcname>\n\t<path>)
+//	%+v   equivalent to %+s:%d
 func (frame StackFrame) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 's':
