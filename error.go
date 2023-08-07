@@ -63,6 +63,9 @@ func (e Error) Is(target error) bool {
 		}
 		return e.ID == actual.ID
 	}
+	if e.Origin != nil && Is(e.Origin, target) {
+		return true
+	}
 	return false
 }
 

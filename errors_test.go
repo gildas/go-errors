@@ -53,6 +53,14 @@ func (suite *ErrorsSuite) TestCanTellIsError() {
 	suite.Assert().False(errors.NotFound.Is(err), "err should not match an NotFoundError")
 }
 
+func (suite *ErrorsSuite) TestCanTellIsErrorWithOrigin() {
+	origin := &url.Error{Op: "Get", URL: "https://bogus.acme.com", Err: fmt.Errorf("Houston, we have a problem")}
+	err := errors.Join(origin)
+
+	suite.Require().ErrorIs(err, errors.RuntimeError, "err should match a RuntimeError")
+	suite.Require().ErrorIs(err, origin, "err should match an url.Error")
+}
+
 func (suite *ErrorsSuite) TestCanConvertToError() {
 	err := errors.NotFound.With("key")
 	suite.Require().NotNil(err, "err should not be nil")
@@ -84,6 +92,19 @@ func (suite *ErrorsSuite) TestCanConvertToSpecificError() {
 
 	details = errors.ArgumentMissing.Clone()
 	suite.Require().False(errors.As(err, &details), "err should not contain an errors.ArgumentMissing")
+}
+
+func (suite *ErrorsSuite) TestCanConvertOriginError() {
+	origin := &url.Error{Op: "Get", URL: "https://bogus.acme.com", Err: fmt.Errorf("Houston, we have a problem")}
+	err := errors.Join(origin)
+	suite.Require().ErrorIs(err, errors.RuntimeError, "err should match a RuntimeError")
+	suite.Require().ErrorIs(err, origin, "err should match an url.Error")
+
+	details := &url.Error{}
+	suite.Require().ErrorAs(err, &details, "err should contain an url.Error")
+	suite.Assert().Equal("Get", details.Op)
+	suite.Assert().Equal("https://bogus.acme.com", details.URL)
+	suite.Assert().Equal("Houston, we have a problem", details.Err.Error())
 }
 
 func (suite *ErrorsSuite) TestShouldFailConvertingToUrlError() {
