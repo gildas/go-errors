@@ -41,7 +41,9 @@ func (suite *ErrorsSuite) TestCanTellIsError() {
 	err := errors.NotFound.With("key")
 	suite.Require().NotNil(err, "err should not be nil")
 	suite.Assert().ErrorIs(err, errors.Error{}, "err should be an errors.Error")
+	suite.Assert().ErrorIs(err, &errors.Error{}, "err should be a pointer to errors.Error")
 	suite.Assert().True(errors.Is(err, errors.NotFound), "err should match a NotFoundError")
+	suite.Assert().True(errors.Is(err, &errors.NotFound), "err should match a pointer to NotFoundError")
 	suite.Assert().True(errors.NotFound.Is(err), "err should match a NotFoundError")
 
 	err = fmt.Errorf("simple error")

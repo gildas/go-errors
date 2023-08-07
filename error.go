@@ -57,6 +57,12 @@ func (e Error) Is(target error) bool {
 		}
 		return e.ID == actual.ID
 	}
+	if actual, ok := target.(*Error); ok && actual != nil {
+		if len(actual.ID) == 0 {
+			return true // no ID means any error is a match
+		}
+		return e.ID == actual.ID
+	}
 	return false
 }
 
