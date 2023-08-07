@@ -88,6 +88,9 @@ func (e Error) As(target interface{}) bool {
 		*actual = &copy
 		return true
 	}
+	if e.Origin != nil {
+		return As(e.Origin, target)
+	}
 	return false
 }
 

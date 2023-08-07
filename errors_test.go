@@ -55,7 +55,7 @@ func (suite *ErrorsSuite) TestCanTellIsError() {
 
 func (suite *ErrorsSuite) TestCanTellIsErrorWithOrigin() {
 	origin := &url.Error{Op: "Get", URL: "https://bogus.acme.com", Err: fmt.Errorf("Houston, we have a problem")}
-	err := errors.Join(origin)
+	err := errors.Join(origin, errors.NotImplemented.WithStack())
 
 	suite.Require().ErrorIs(err, errors.RuntimeError, "err should match a RuntimeError")
 	suite.Require().ErrorIs(err, origin, "err should match an url.Error")
@@ -96,7 +96,7 @@ func (suite *ErrorsSuite) TestCanConvertToSpecificError() {
 
 func (suite *ErrorsSuite) TestCanConvertOriginError() {
 	origin := &url.Error{Op: "Get", URL: "https://bogus.acme.com", Err: fmt.Errorf("Houston, we have a problem")}
-	err := errors.Join(origin)
+	err := errors.Join(origin, errors.NotImplemented.WithStack())
 	suite.Require().ErrorIs(err, errors.RuntimeError, "err should match a RuntimeError")
 	suite.Require().ErrorIs(err, origin, "err should match an url.Error")
 
