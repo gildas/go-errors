@@ -46,15 +46,25 @@ func (e Error) GetID() string {
 // implements errors.Is interface (package "errors").
 //
 // To check if an error is an errors.Error, simply write:
-//  if errors.Is(err, errors.Error{}) {
-//    // do something with err
-//  }
+//
+//	if errors.Is(err, errors.Error{}) {
+//	  // do something with err
+//	}
 func (e Error) Is(target error) bool {
 	if actual, ok := target.(Error); ok {
 		if len(actual.ID) == 0 {
 			return true // no ID means any error is a match
 		}
 		return e.ID == actual.ID
+	}
+	if actual, ok := target.(*Error); ok && actual != nil {
+		if len(actual.ID) == 0 {
+			return true // no ID means any error is a match
+		}
+		return e.ID == actual.ID
+	}
+	if e.Origin != nil {
+		return Is(e.Origin, target)
 	}
 	return false
 }
@@ -64,10 +74,11 @@ func (e Error) Is(target error) bool {
 // As returns true if the conversion was successful and the target is now populated.
 //
 // Example:
-//   target := errors.ArgumentInvalid.Clone()
-//   if errors.As(err, &target) {
-//     // do something with target
-//   }
+//
+//	target := errors.ArgumentInvalid.Clone()
+//	if errors.As(err, &target) {
+//	  // do something with target
+//	}
 func (e Error) As(target interface{}) bool {
 	if actual, ok := target.(**Error); ok {
 		if *actual != nil && (*actual).GetID() != e.ID {
@@ -76,6 +87,9 @@ func (e Error) As(target interface{}) bool {
 		copy := e
 		*actual = &copy
 		return true
+	}
+	if e.Origin != nil {
+		return As(e.Origin, target)
 	}
 	return false
 }

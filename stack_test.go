@@ -9,13 +9,12 @@ import (
 	"github.com/gildas/go-errors"
 )
 
-
 func (suite *ErrorsSuite) TestCanFormatStackTrace() {
 	err := errors.NotImplemented.WithStack()
 	actual, ok := err.(errors.Error)
 	suite.Require().True(ok)
 	suite.Require().NotEmpty(actual.Stack, "The stack should not be empty")
-	suite.Assert().Contains(fmt.Sprintf("%v", actual.Stack), "[stack_test.go:14 value.go")
+	suite.Assert().Contains(fmt.Sprintf("%v", actual.Stack), "[stack_test.go:13 value.go")
 	suite.Assert().Contains(fmt.Sprintf("%s", actual.Stack), "[stack_test.go value.go")
 }
 

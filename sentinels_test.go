@@ -6,7 +6,6 @@ import (
 	"github.com/gildas/go-errors"
 )
 
-
 func (suite *ErrorsSuite) TestCanCreateSentinel() {
 	err := errors.NewSentinel(32123, "error.test.create", "this is the error")
 	suite.Require().NotNil(err, "newly created sentinel cannot be nil")

@@ -41,7 +41,9 @@ func (suite *ErrorsSuite) TestCanTellIsError() {
 	err := errors.NotFound.With("key")
 	suite.Require().NotNil(err, "err should not be nil")
 	suite.Assert().ErrorIs(err, errors.Error{}, "err should be an errors.Error")
+	suite.Assert().ErrorIs(err, &errors.Error{}, "err should be a pointer to errors.Error")
 	suite.Assert().True(errors.Is(err, errors.NotFound), "err should match a NotFoundError")
+	suite.Assert().True(errors.Is(err, &errors.NotFound), "err should match a pointer to NotFoundError")
 	suite.Assert().True(errors.NotFound.Is(err), "err should match a NotFoundError")
 
 	err = fmt.Errorf("simple error")
@@ -49,6 +51,14 @@ func (suite *ErrorsSuite) TestCanTellIsError() {
 	suite.Assert().NotErrorIs(err, errors.Error{}, "err should not be an errors.Error")
 	suite.Assert().False(errors.Is(err, errors.NotFound), "err should not match an NotFoundError")
 	suite.Assert().False(errors.NotFound.Is(err), "err should not match an NotFoundError")
+}
+
+func (suite *ErrorsSuite) TestCanTellIsErrorWithOrigin() {
+	origin := &url.Error{Op: "Get", URL: "https://bogus.acme.com", Err: fmt.Errorf("Houston, we have a problem")}
+	err := errors.Join(origin, errors.NotImplemented.WithStack())
+
+	suite.Require().ErrorIs(err, errors.RuntimeError, "err should match a RuntimeError")
+	suite.Require().ErrorIs(err, origin, "err should match an url.Error")
 }
 
 func (suite *ErrorsSuite) TestCanConvertToError() {
@@ -82,6 +92,19 @@ func (suite *ErrorsSuite) TestCanConvertToSpecificError() {
 
 	details = errors.ArgumentMissing.Clone()
 	suite.Require().False(errors.As(err, &details), "err should not contain an errors.ArgumentMissing")
+}
+
+func (suite *ErrorsSuite) TestCanConvertOriginError() {
+	origin := &url.Error{Op: "Get", URL: "https://bogus.acme.com", Err: fmt.Errorf("Houston, we have a problem")}
+	err := errors.Join(origin, errors.NotImplemented.WithStack())
+	suite.Require().ErrorIs(err, errors.RuntimeError, "err should match a RuntimeError")
+	suite.Require().ErrorIs(err, origin, "err should match an url.Error")
+
+	details := &url.Error{}
+	suite.Require().ErrorAs(err, &details, "err should contain an url.Error")
+	suite.Assert().Equal("Get", details.Op)
+	suite.Assert().Equal("https://bogus.acme.com", details.URL)
+	suite.Assert().Equal("Houston, we have a problem", details.Err.Error())
 }
 
 func (suite *ErrorsSuite) TestShouldFailConvertingToUrlError() {
