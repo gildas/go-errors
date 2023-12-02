@@ -172,6 +172,9 @@ var IndexOutOfBounds = NewSentinel(http.StatusBadRequest, "error.index.outofboun
 // RuntimeError is used when the code failed executing something.
 var RuntimeError = NewSentinel(http.StatusInternalServerError, "error.runtime", "Runtime Error")
 
+// Timeout is used when something timed out.
+var Timeout = NewSentinel(http.StatusRequestTimeout, "error.timeout", "%s Timeout")
+
 // TooManyErrors is used when something is found too many times.
 var TooManyErrors = NewSentinel(http.StatusInternalServerError, "error.toomany", "Too Many")
 
