@@ -1,6 +1,10 @@
 # Thanks to:
 # https://github.com/mvdan/github-actions-golang
-on: [push, pull_request]
+on:
+  push:
+    branches: [ dev, master ]
+  pull_request:
+    branches: [ dev, master ]
 name: Test
 jobs:
   test:
@@ -12,16 +16,16 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Install Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
       - name: Checkout package
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Test package
         run: |
           go test -v -coverprofile=coverage.out -covermode=count ./...
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.out
