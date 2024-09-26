@@ -111,6 +111,19 @@ func (e Error) Wrap(err error) error {
 	return final
 }
 
+// WrapIfNotMe wraps the given error in this Error if the given error is not of the same type.
+//
+// If err is nil, WrapIfNotMe returns nil.
+func (e Error) WrapIfNotMe(err error) error {
+	if err == nil {
+		return nil
+	}
+	if Is(err, e) {
+		return err
+	}
+	return e.Wrap(err)
+}
+
 // Unwrap gives the first Cause of this Error, if any.
 //
 // implements errors.Unwrap interface (package "errors").

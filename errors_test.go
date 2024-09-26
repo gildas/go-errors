@@ -769,6 +769,21 @@ func (suite *ErrorsSuite) TestFailsUnmarshallErrorWithWrongType() {
 	suite.Assert().Equal("blob", value)
 }
 
+func (suite *ErrorsSuite) TestCanWrapIfNotMe() {
+	err := errors.JSONUnmarshalError.WrapIfNotMe(errors.JSONUnmarshalError.Wrap(errors.ArgumentMissing.With("key")))
+	suite.Assert().ErrorIs(err, errors.JSONUnmarshalError, "error should be a JSONUnmarshalError")
+	suite.Assert().ErrorIs(err, errors.ArgumentMissing, "error should be an ArgumentMissing")
+	suite.Assert().False(errors.Is(errors.Unwrap(err), errors.JSONUnmarshalError), "Inner error should be not be JSONUnmarshalError")
+	suite.Assert().ErrorIs(errors.Unwrap(err), errors.ArgumentMissing, "Inner error should be an ArgumentMissing")
+	err = errors.JSONUnmarshalError.WrapIfNotMe(errors.ArgumentMissing.With("key"))
+	suite.Assert().ErrorIs(err, errors.JSONUnmarshalError, "error should be a JSONUnmarshalError")
+	suite.Assert().ErrorIs(err, errors.ArgumentMissing, "error should be an ArgumentMissing")
+	suite.Assert().False(errors.Is(errors.Unwrap(err), errors.JSONUnmarshalError), "Inner error should be not be JSONUnmarshalError")
+	suite.Assert().ErrorIs(errors.Unwrap(err), errors.ArgumentMissing, "eInner rror should be an ArgumentMissing")
+	err = errors.JSONUnmarshalError.WrapIfNotMe(nil)
+	suite.Assert().Nil(err, "error should be nil")
+}
+
 func ExampleError() {
 	err := errors.NewSentinel(500, "error.test.custom", "Test Error").Clone()
 	fmt.Println(err)
