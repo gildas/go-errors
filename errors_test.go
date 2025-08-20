@@ -751,7 +751,7 @@ func (suite *ErrorsSuite) TestFailsUnmarshallErrorWithWrongPayload() {
 	err := json.Unmarshal([]byte(payload), &testerr)
 	suite.Require().NotNil(err)
 	suite.Assert().True(errors.Is(err, errors.JSONUnmarshalError), "Error should be a JSONUnmarshalError")
-	suite.Assert().Equal("json: cannot unmarshal number into Go struct field .id of type string", errors.Unwrap(err).Error())
+	suite.Assert().Equal("json: cannot unmarshal number into Go struct field .surrogate.id of type string", errors.Unwrap(err).Error())
 }
 
 func (suite *ErrorsSuite) TestFailsUnmarshallErrorWithWrongType() {
