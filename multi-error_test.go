@@ -127,7 +127,8 @@ func (suite *MultiErrorSuite) TestCanConvertToErrorWithErrorAs() {
 	suite.Require().ErrorAs(errs.AsError(), &details, "should be able to convert to errors.ArgumentInvalid")
 	suite.Assert().Equal(errors.ArgumentInvalid.ID, details.ID)
 	suite.Assert().Equal("name2", details.What)
-	value, ok := details.Value.(string)
+	suite.Require().Len(details.Values, 1, "details should have one value")
+	value, ok := details.Values[0].(string)
 	suite.Require().True(ok, "value should be a string")
 	suite.Assert().Equal("value2", value)
 }

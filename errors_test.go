@@ -476,7 +476,7 @@ func (suite *ErrorsSuite) TestFailsWithNonErrorTarget() {
 }
 
 func (suite *ErrorsSuite) TestCanMarshalError() {
-	expected := `{"type": "error", "id": "error.argument.invalid", "code": 400, "text": "Argument %s is invalid (value: %v)", "what": "key", "value": "value"}`
+	expected := `{"type": "error", "id": "error.argument.invalid", "code": 400, "text": "Argument %s is invalid (value: %v)", "what": "key", "values": ["value"]}`
 	testerr := errors.ArgumentInvalid.With("key", "value")
 	payload, err := json.Marshal(testerr)
 	suite.Require().Nil(err)
@@ -498,7 +498,7 @@ func (suite *ErrorsSuite) TestCanMarshalErrorWithCause() {
 		"code": 400,
 		"text": "Argument %s is invalid (value: %v)",
 		"what": "key",
-		"value": "value",
+		"values": ["value"],
 		"cause": {
 			"type": "error",
 			"code": 400,
@@ -520,7 +520,7 @@ func (suite *ErrorsSuite) TestCanMarshalErrorWithURLErrorCause01() {
 		"code": 400,
 		"text": "Argument %s is invalid (value: %v)",
 		"what": "key",
-		"value": "value",
+		"values": ["value"],
 		"cause": {
 			"type": "error",
 			"code": 500,
@@ -550,7 +550,7 @@ func (suite *ErrorsSuite) TestCanMarshalErrorWithURLErrorCause02() {
 		"code": 400,
 		"text": "Argument %s is invalid (value: %v)",
 		"what": "key",
-		"value": "value",
+		"values": ["value"],
 		"cause": {
 			"type": "error",
 			"code": 500,
@@ -589,7 +589,7 @@ func (suite *ErrorsSuite) TestCanMarshalErrorWithManyCauses() {
 		"code": 400,
 		"text": "Argument %s is invalid (value: %v)",
 		"what": "key",
-		"value": "value",
+		"values": ["value"],
 		"cause": {
 			"type": "error",
 			"id": "error.argument.missing",
@@ -631,7 +631,7 @@ func (suite *ErrorsSuite) TestCanUnmarshalErrorWithErrorCause() {
 		"code": 400,
 		"text": "Argument %s is invalid (value: %v)",
 		"what": "key",
-		"value": "value",
+		"values": ["value"],
 		"cause": {
 			"type": "error",
 			"code": 400,
@@ -660,7 +660,7 @@ func (suite *ErrorsSuite) TestCanUnmarshalErrorWithTextCause() {
 		"code": 400,
 		"text": "Argument %s is invalid (value: %v)",
 		"what": "key",
-		"value": "value",
+		"values": ["value"],
 		"cause": {
 			"type": "error",
 			"code": 500,
@@ -689,7 +689,7 @@ func (suite *ErrorsSuite) TestCanUnmarshalErrorWithManyCauses() {
 		"code": 400,
 		"text": "Argument %s is invalid (value: %v)",
 		"what": "key",
-		"value": "value",
+		"values": ["value"],
 		"cause": {
 			"type": "error",
 			"id": "error.argument.missing",
@@ -717,7 +717,8 @@ func (suite *ErrorsSuite) TestCanUnmarshalErrorWithManyCauses() {
 	suite.Assert().Equal(400, cause0.Code)
 	suite.Assert().Equal("Argument %s is invalid (value: %v)", cause0.Text)
 	suite.Assert().Equal("key", cause0.What)
-	suite.Assert().Equal("value", cause0.Value)
+	suite.Require().Len(cause0.Values, 1, "cause0 should have one value")
+	suite.Assert().Equal("value", cause0.Values[0])
 
 	cause1 := errors.ArgumentMissing.Clone()
 	suite.Require().ErrorAs(testerr, &cause1, "causes1 should be an errors.Error")
@@ -746,7 +747,7 @@ func (suite *ErrorsSuite) TestCanUnmarshalErrorWithManyCauses() {
 }
 
 func (suite *ErrorsSuite) TestFailsUnmarshallErrorWithWrongPayload() {
-	payload := `{"type": "error", "id": 1000, "code": 400, "text": "Argument %s is invalid (value: %v)", "what": "key", "value": "value"}`
+	payload := `{"type": "error", "id": 1000, "code": 400, "text": "Argument %s is invalid (value: %v)", "what": "key", "values": ["value"]}`
 	testerr := errors.Error{}
 	err := json.Unmarshal([]byte(payload), &testerr)
 	suite.Require().NotNil(err)
@@ -764,8 +765,9 @@ func (suite *ErrorsSuite) TestFailsUnmarshallErrorWithWrongType() {
 	details := errors.InvalidType.Clone()
 	suite.Require().ErrorAs(err, &details, "err should contain an errors.InvalidType")
 	suite.Assert().Equal("error", details.What)
-	value, ok := details.Value.(string)
-	suite.Require().True(ok, "details.Value should be a string")
+	suite.Require().Len(details.Values, 1, "details.Values should have one element")
+	value, ok := details.Values[0].(string)
+	suite.Require().True(ok, "details.Values[0] should be a string")
 	suite.Assert().Equal("blob", value)
 }
 
@@ -782,6 +784,11 @@ func (suite *ErrorsSuite) TestCanWrapIfNotMe() {
 	suite.Assert().ErrorIs(errors.Unwrap(err), errors.ArgumentMissing, "eInner rror should be an ArgumentMissing")
 	err = errors.JSONUnmarshalError.WrapIfNotMe(nil)
 	suite.Assert().Nil(err, "error should be nil")
+}
+
+func (suite *ErrorsSuite) TestCanDisplayInvalidError() {
+	err := errors.Invalid.With("blah", "foo", "bar")
+	suite.Assert().Equal("Invalid blah (value: foo, expected: bar)", err.Error())
 }
 
 func ExampleError() {
@@ -865,7 +872,7 @@ func ExampleError_Format_gosyntax_01() {
 	noasm := regexp.MustCompile(`, asm_.[^\.]+.s:[0-9]+`)
 	fmt.Println(noasm.ReplaceAllString(simplifier.ReplaceAllString(output, ".go"), ""))
 	// Output:
-	// errors.Error{Code: 400, ID: "error.argument.invalid", Text: "Argument %s is invalid (value: %v)", What: "key", Value: "value", Cause: errors.Error{Code: 400, ID: "error.argument.missing", Text: "Argument %s is missing", What: "key", Stack: []errors.StackFrame{errors_test.go, errors_test.go, errors_test.go, run_example.go, example.go, testing.go, _testmain.go, proc.go}}, Stack: []errors.StackFrame{errors_test.go, errors_test.go, errors_test.go, run_example.go, example.go, testing.go, _testmain.go, proc.go}}
+	// errors.Error{Code: 400, ID: "error.argument.invalid", Text: "Argument %s is invalid (value: %v)", What: "key", Values: []interface {}{"value"}, Cause: errors.Error{Code: 400, ID: "error.argument.missing", Text: "Argument %s is missing", What: "key", Stack: []errors.StackFrame{errors_test.go, errors_test.go, errors_test.go, run_example.go, example.go, testing.go, _testmain.go, proc.go}}, Stack: []errors.StackFrame{errors_test.go, errors_test.go, errors_test.go, run_example.go, example.go, testing.go, _testmain.go, proc.go}}
 }
 
 func ExampleError_Format_gosyntax_02() {
@@ -881,7 +888,7 @@ func ExampleError_Format_gosyntax_02() {
 	noasm := regexp.MustCompile(`, asm_.[^\.]+.s:[0-9]+`)
 	fmt.Println(noasm.ReplaceAllString(simplifier.ReplaceAllString(output, ".go"), ""))
 	// Output:
-	// errors.Error{Code: 400, ID: "error.argument.invalid", Text: "Argument %s is invalid (value: %v)", What: "key", Value: "value", Cause: "unknown error", Stack: []errors.StackFrame{errors_test.go, errors_test.go, errors_test.go, run_example.go, example.go, testing.go, _testmain.go, proc.go}}
+	// errors.Error{Code: 400, ID: "error.argument.invalid", Text: "Argument %s is invalid (value: %v)", What: "key", Values: []interface {}{"value"}, Cause: "unknown error", Stack: []errors.StackFrame{errors_test.go, errors_test.go, errors_test.go, run_example.go, example.go, testing.go, _testmain.go, proc.go}}
 }
 
 func ExampleError_With() {

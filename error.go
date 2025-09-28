@@ -19,9 +19,9 @@ type Error struct {
 	Text string `json:"text,omitempty"`
 	// What contains what element is wrong for errors that need it, like NotFoundError
 	What string `json:"what,omitempty"`
-	// Value contains the value that was wrong for errors that need it, like ArgumentInvalidError
+	// Values contains the values that were wrong for errors that need it, like ArgumentInvalidError
 	// TODO: use structpb
-	Value interface{} `json:"value,omitempty"`
+	Values []any `json:"values,omitempty"`
 	// Origin contains the real error from another package, if any
 	Origin error `json:"-"`
 	// Cause contains the error that caused this error
@@ -137,12 +137,12 @@ func (e Error) Unwrap() error {
 // With creates a new Error from a given sentinel telling "what" is wrong and eventually their value.
 //
 // With also records the stack trace at the point it was called.
-func (e Error) With(what string, values ...interface{}) error {
+func (e Error) With(what string, values ...any) error {
 	final := e
 	final.What = what
-	if len(values) > 0 {
-		final.Value = values[0]
-	}
+	// make a copy of values
+	final.Values = make([]any, len(values))
+	copy(final.Values, values)
 	final.Stack.Initialize()
 	return final
 }
@@ -187,7 +187,13 @@ func (e Error) Error() string {
 	case 1:
 		_, _ = fmt.Fprintf(&sb, e.Text, e.What)
 	default:
-		_, _ = fmt.Fprintf(&sb, e.Text, e.What, e.Value)
+		// make a slice from What + Values
+		args := make([]any, 0, 1+len(e.Values))
+		if len(e.What) > 0 {
+			args = append(args, e.What)
+		}
+		args = append(args, e.Values...)
+		_, _ = fmt.Fprintf(&sb, e.Text, args...)
 	}
 	if e.Cause != nil {
 		_, _ = sb.WriteString("\nCaused by:")
@@ -207,8 +213,8 @@ func (e Error) GoString() string {
 	if len(e.What) > 0 {
 		_, _ = fmt.Fprintf(&sb, `, What: "%s"`, e.What)
 	}
-	if e.Value != nil {
-		_, _ = fmt.Fprintf(&sb, `, Value: %#v`, e.Value)
+	if len(e.Values) > 0 {
+		_, _ = fmt.Fprintf(&sb, `, Values: %#v`, e.Values)
 	}
 	if e.Cause != nil {
 		_, _ = sb.WriteString(", Cause: ")
